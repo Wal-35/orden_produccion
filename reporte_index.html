@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ILTEC - Reporte Producción</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root { --primary: #1e272e; --accent: #0be881; --bg: #d2dae2; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 10px; font-size: 14px; }
+        .contenedor { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: var(--primary); color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .header img { max-height: 35px; }
+        .seccion { padding: 15px; display: none; }
+        .activo { display: block; animation: fadeIn 0.3s; }
+        h3 { border-bottom: 2px solid var(--accent); padding-bottom: 5px; color: var(--primary); margin-top: 0; font-size: 1.1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        label { font-weight: bold; font-size: 0.7rem; color: #555; text-transform: uppercase; }
+        input, select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-top: 2px; box-sizing: border-box; }
+        .caja-paro { background: #fff2cc; padding: 8px; border-radius: 4px; border: 1px solid #f6e58d; margin-bottom: 8px; }
+        .caja-calidad { background: #e0f7fa; padding: 8px; border-radius: 4px; border: 1px solid #b2ebf2; margin-bottom: 8px; }
+        .resumen { background: #eefaf3; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; text-align: center; border: 1px solid #c6f6d5; color: #2c3e50; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; text-decoration: none; font-size: 0.9rem; }
+        .btn-wa { background: #25D366; color: white; }
+        .btn-plano { background: #3498db; color: white; margin-bottom: 15px; }
+        .info-previa { background: #f1f2f6; padding: 10px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 15px; border-left: 3px solid #3498db; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <div class="header">
+        <img src="https://wal-35.github.io/orden_produccion/logoiltec.png" alt="ILTEC">
+        <div><strong>PRODUCCIÓN</strong></div>
+    </div>
+
+    <div class="seccion activo" id="paso1">
+        <h3>1. Programador (Datos Iniciales)</h3>
+        <label>Pieza / Item:</label><input type="text" id="i_item" placeholder="Ej: 10811D">
+        <label>Plano (Link GitHub):</label><input type="url" id="i_plano" placeholder="https://...">
+        <div class="grid">
+            <div><label>Cant:</label><input type="number" id="i_cant"></div>
+            <div><label>Mat/Calibre:</label><input type="text" id="i_cal"></div>
+        </div>
+        <button class="btn btn-wa" onclick="enviarPaso1()"><i class="material-icons">send</i> Enviar a Preparador</button>
+    </div>
+
+    <div class="seccion" id="paso2">
+        <h3>2. Preparador / Alistador</h3>
+        <div class="info-previa" id="info_p2"></div>
+        <a href="#" id="link_plano2" class="btn btn-plano" target="_blank"><i class="material-icons">plumbing</i> VER PLANO PARA SETEAR</a>
+        
+        <label>Asignar Máquina para Punzonado:</label>
+        <input type="text" id="p_maquina" placeholder="Ej: Punzonadora 1">
+        
+        <button class="btn btn-wa" onclick="enviarPaso2()"><i class="material-icons">arrow_forward</i> Enviar a Grupo Punzonado</button>
+    </div>
+
+    <div class="seccion" id="paso3">
+        <h3>3. Reporte Punzonado</h3>
+        <div class="info-previa" id="info_p3"></div>
+        <a href="#" id="link_plano3" class="btn btn-plano" target="_blank"><i class="material-icons">map</i> VER PLANO</a>
+        
+        <div class="grid">
+            <div><label>Operario:</label><input type="text" id="pu_op"></div>
+            <div><label>Máquina:</label><input type="text" id="pu_mq" readonly style="background:#eee"></div>
+        </div>
+        
+        <label>Tiempo de Operación:</label>
+        <div class="grid">
+            <div><label>F. Inicio:</label><input type="date" id="pu_fi"></div>
+            <div><label>H. Inicio:</label><input type="time" id="pu_hi" onchange="calcTiempo('pu_fi','pu_hi','pu_ff','pu_hf','res_pu')"></div>
+            <div><label>F. Final:</label><input type="date" id="pu_ff"></div>
+            <div><label>H. Final:</label><input type="time" id="pu_hf" onchange="calcTiempo('pu_fi','pu_hi','pu_ff','pu_hf','res_pu')"></div>
+        </div>
+        <div class="resumen" id="res_pu">Total Operación: 0 min</div>
+
+        <div class="caja-paro">
+            <label>Registro de Paro:</label>
+            <select id="pu_pc">
+                <option value="Sin Paros">Normal (Sin paros)</option>
+                <option value="MNT">Mantenimiento</option>
+                <option value="HER">Cambio Herramientas</option>
+                <option value="MAT">Falta Material</option>
+                <option value="CAL">Calidad</option>
+            </select>
+            <div class="grid" style="margin-top:5px;">
+                <div><label>Hora Inicio:</label><input type="time" id="pu_pi" onchange="calcParo('pu_pi','pu_pf','res_pu_paro')"></div>
+                <div><label>Hora Fin:</label><input type="time" id="pu_pf" onchange="calcParo('pu_pi','pu_pf','res_pu_paro')"></div>
+            </div>
+            <div class="resumen" id="res_pu_paro" style="background:#fff; color:#b8860b;">Total Paro: 0 min</div>
+        </div>
+
+        <div class="caja-calidad">
+            <label>Producción:</label>
+            <div class="grid">
+                <div><label>Conformes:</label><input type="number" id="pu_ok"></div>
+                <div><label>No Conformes:</label><input type="number" id="pu_nok"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-wa" onclick="enviarPaso3()"><i class="material-icons">arrow_forward</i> Enviar a Grupo Plegado</button>
+    </div>
+
+    <div class="seccion" id="paso4">
+        <h3>4. Reporte Plegado</h3>
+        <div class="info-previa" id="info_p4"></div>
+        <a href="#" id="link_plano4" class="btn btn-plano" target="_blank"><i class="material-icons">map</i> VER PLANO</a>
+        
+        <div class="grid">
+            <div><label>Doblador:</label><input type="text" id="pl_op"></div>
+            <div><label>Máquina:</label><input type="text" id="pl_mq"></div>
+        </div>
+        
+        <label>Tiempo de Operación:</label>
+        <div class="grid">
+            <div><label>F. Inicio:</label><input type="date" id="pl_fi"></div>
+            <div><label>H. Inicio:</label><input type="time" id="pl_hi" onchange="calcTiempo('pl_fi','pl_hi','pl_ff','pl_hf','res_pl')"></div>
+            <div><label>F. Final:</label><input type="date" id="pl_ff"></div>
+            <div><label>H. Final:</label><input type="time" id="pl_hf" onchange="calcTiempo('pl_fi','pl_hi','pl_ff','pl_hf','res_pl')"></div>
+        </div>
+        <div class="resumen" id="res_pl">Total Operación: 0 min</div>
+
+        <div class="caja-paro">
+            <label>Registro de Paro:</label>
+            <select id="pl_pc">
+                <option value="Sin Paros">Normal (Sin paros)</option>
+                <option value="MNT">Mantenimiento</option>
+                <option value="HER">Cambio Herramientas</option>
+                <option value="MAT">Falta Material</option>
+                <option value="CAL">Calidad</option>
+            </select>
+            <div class="grid" style="margin-top:5px;">
+                <div><label>Hora Inicio:</label><input type="time" id="pl_pi" onchange="calcParo('pl_pi','pl_pf','res_pl_paro')"></div>
+                <div><label>Hora Fin:</label><input type="time" id="pl_pf" onchange="calcParo('pl_pi','pl_pf','res_pl_paro')"></div>
+            </div>
+            <div class="resumen" id="res_pl_paro" style="background:#fff; color:#b8860b;">Total Paro: 0 min</div>
+        </div>
+
+        <div class="caja-calidad">
+            <label>Producción:</label>
+            <div class="grid">
+                <div><label>Conformes:</label><input type="number" id="pl_ok"></div>
+                <div><label>No Conformes:</label><input type="number" id="pl_nok"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-wa" onclick="enviarPaso4()"><i class="material-icons">done_all</i> Enviar a Base de Datos</button>
+    </div>
+
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    
+    // Función para link siempre limpio, incluso si pruebas en tu PC
+    const getLinkLimpio = () => {
+        let currentUrl = window.location.href.split('?')[0];
+        if (currentUrl.startsWith('file:///')) {
+            return 'https://wal-35.github.io/orden_produccion/reporte_index.html';
+        }
+        return currentUrl;
+    };
+
+    // Lógica de cálculo de tiempo (Fechas y Horas)
+    function calcTiempo(idFi, idHi, idFf, idHf, resultId) {
+        let fi = document.getElementById(idFi).value;
+        let hi = document.getElementById(idHi).value;
+        let ff = document.getElementById(idFf).value;
+        let hf = document.getElementById(idHf).value;
+        if(fi && hi && ff && hf) {
+            let inicio = new Date(`${fi}T${hi}`);
+            let fin = new Date(`${ff}T${hf}`);
+            let diff = (fin - inicio) / 60000;
+            document.getElementById(resultId).innerText = `Total Operación: ${diff > 0 ? diff : 0} min`;
+            return diff > 0 ? diff : 0;
+        }
+        return 0;
+    }
+
+    // Lógica de cálculo de paro (Solo horas en el mismo turno)
+    function calcParo(idPi, idPf, resultId) {
+        let pi = document.getElementById(idPi).value;
+        let pf = document.getElementById(idPf).value;
+        if(pi && pf) {
+            let t1 = new Date(`1970-01-01T${pi}`);
+            let t2 = new Date(`1970-01-01T${pf}`);
+            let diff = (t2 - t1) / 60000;
+            if(diff < 0) diff += 1440; // Por si cruza la medianoche
+            document.getElementById(resultId).innerText = `Total Paro: ${diff} min`;
+            return diff;
+        }
+        return 0;
+    }
+
+    // Control del Flujo según el parámetro "step" en la URL
+    window.onload = function() {
+        const step = params.get('step') || '1';
+        document.getElementById('paso1').classList.remove('activo');
+        
+        if(step === '1') {
+            document.getElementById('paso1').classList.add('activo');
+        } 
+        else if(step === '2') {
+            document.getElementById('paso2').classList.add('activo');
+            document.getElementById('info_p2').innerText = `Item: ${params.get('i')} | Cant: ${params.get('c')} | Calibre: ${params.get('m')}`;
+            document.getElementById('link_plano2').href = decodeURIComponent(params.get('p'));
+        }
+        else if(step === '3') {
+            document.getElementById('paso3').classList.add('activo');
+            document.getElementById('info_p3').innerText = `Item: ${params.get('i')} | Cant: ${params.get('c')}`;
+            document.getElementById('link_plano3').href = decodeURIComponent(params.get('p'));
+            document.getElementById('pu_mq').value = params.get('mq'); // Llena la máquina seleccionada por el preparador
+        }
+        else if(step === '4') {
+            document.getElementById('paso4').classList.add('activo');
+            document.getElementById('info_p4').innerText = `Item: ${params.get('i')} | Punzonado terminado.`;
+            document.getElementById('link_plano4').href = decodeURIComponent(params.get('p'));
+        }
+    }
+
+    // PASO 1 -> PREPARADOR
+    function enviarPaso1() {
+        const i = document.getElementById('i_item').value;
+        const p = document.getElementById('i_plano').value;
+        const c = document.getElementById('i_cant').value;
+        const m = document.getElementById('i_cal').value;
+        if(!i || !p) return alert("Falta Item o Plano");
+        
+        let url = `${getLinkLimpio()}?step=2&i=${encodeURIComponent(i)}&p=${encodeURIComponent(p)}&c=${c}&m=${encodeURIComponent(m)}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(`*Nueva Orden*\nItem: ${i}\nAlistador, por favor ver plano y asignar máquina:\n${url}`)}`);
+    }
+
+    // PASO 2 -> PUNZONADO
+    function enviarPaso2() {
+        const mq = document.getElementById('p_maquina').value;
+        if(!mq) return alert("Escribe la máquina");
+        
+        let url = `${getLinkLimpio()}?step=3&i=${params.get('i')}&p=${encodeURIComponent(params.get('p'))}&c=${params.get('c')}&m=${encodeURIComponent(params.get('m'))}&mq=${encodeURIComponent(mq)}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(`*PUNZONADO*\nItem: ${params.get('i')}\nMáquina: ${mq}\nLink para reporte:\n${url}`)}`);
+    }
+
+    // PASO 3 -> PLEGADO (Pasa datos de punzonado ocultos en la URL)
+    function enviarPaso3() {
+        const url_base = `${getLinkLimpio()}?step=4&i=${params.get('i')}&p=${encodeURIComponent(params.get('p'))}&c=${params.get('c')}&m=${encodeURIComponent(params.get('m'))}`;
+        
+        // Recopilar datos de punzonado
+        const dt_pu = `&pu_op=${document.getElementById('pu_op').value}&pu_mq=${document.getElementById('pu_mq').value}&pu_min=${calcTiempo('pu_fi','pu_hi','pu_ff','pu_hf','res_pu')}&pu_pc=${document.getElementById('pu_pc').value}&pu_pmin=${calcParo('pu_pi','pu_pf','res_pu_paro')}&pu_ok=${document.getElementById('pu_ok').value}&pu_nok=${document.getElementById('pu_nok').value}`;
+        
+        const link_final = url_base + encodeURI(dt_pu);
+        const msg = `✅ *PUNZONADO LISTO*\nItem: ${params.get('i')}\nSigue Plegado, abran su reporte aquí:\n${link_final}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+    }
+
+    // PASO 4 -> BASE DE DATOS (Arma el mensaje maestro)
+    function enviarPaso4() {
+        // Datos Iniciales
+        const i = params.get('i'); const c = params.get('c'); const m = params.get('m');
+        
+        // Datos Punzonado (vienen de la URL)
+        const pu_op = params.get('pu_op'); const pu_mq = params.get('pu_mq'); 
+        const pu_min = params.get('pu_min'); const pu_pc = params.get('pu_pc'); 
+        const pu_pmin = params.get('pu_pmin'); const pu_ok = params.get('pu_ok'); const pu_nok = params.get('pu_nok');
+
+        // Datos Plegado (del formulario actual)
+        const pl_op = document.getElementById('pl_op').value;
+        const pl_mq = document.getElementById('pl_mq').value;
+        const pl_min = calcTiempo('pl_fi','pl_hi','pl_ff','pl_hf','res_pl');
+        const pl_pc = document.getElementById('pl_pc').value;
+        const pl_pmin = calcParo('pl_pi','pl_pf','res_pl_paro');
+        const pl_ok = document.getElementById('pl_ok').value;
+        const pl_nok = document.getElementById('pl_nok').value;
+
+        // Construir el Súper Mensaje
+        const msg = `📊 *REPORTE PRODUCCIÓN ILTEC* 📊
+*Item:* ${i} | *Cant:* ${c} | *Mat:* ${m}
+
+🔨 *PUNZONADO*
+Op: ${pu_op} | Máq: ${pu_mq}
+T. Operación: ${pu_min} min
+Paro: ${pu_pc} (${pu_pmin} min)
+Conf: ${pu_ok} | No Conf: ${pu_nok}
+
+📐 *PLEGADO*
+Op: ${pl_op} | Máq: ${pl_mq}
+T. Operación: ${pl_min} min
+Paro: ${pl_pc} (${pl_pmin} min)
+Conf: ${pl_ok} | No Conf: ${pl_nok}`;
+
+        // Número destino de Base de Datos
+        window.open(`https://wa.me/573182150158?text=${encodeURIComponent(msg)}`);
+        document.body.innerHTML = "<div class='contenedor' style='padding:40px; text-align:center'><h1>✔ Enviado a BD</h1></div>";
+    }
+</script>
+</body>
+</html>
