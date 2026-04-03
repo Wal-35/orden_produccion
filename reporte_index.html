@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="robots" content="noindex, nofollow">
+    
+    <title>ILTEC - Sistema de Reporte de Producción</title>
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        /* VARIABLES DE DISEÑO: Facilitan cambios de color globales */
+        :root { 
+            --color-primario: #2c3e50; 
+            --color-exito: #27ae60; 
+            --color-alerta: #e67e22;
+            --color-fondo: #ecf0f1; 
+            --color-borde: #bdc3c7; 
+            --blanco: #ffffff;
+        }
+
+        /* ESTILOS GENERALES */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--color-fondo); 
+            margin: 0; 
+            padding: 10px; 
+            font-size: 11px; 
+        }
+
+        .contenedor-principal { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: var(--blanco); 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+        }
+
+        /* ENCABEZADO */
+        .encabezado { 
+            background: var(--color-primario); 
+            color: white; 
+            padding: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+
+        .encabezado img { 
+            max-height: 35px; 
+            background: white; 
+            padding: 2px; 
+            border-radius: 4px; 
+        }
+
+        /* SECCIONES DEL FORMULARIO */
+        .seccion-paso { 
+            padding: 15px; 
+            display: none; 
+        }
+
+        .seccion-activa { 
+            display: block; 
+        }
+
+        h3 { 
+            border-bottom: 2px solid var(--color-exito); 
+            color: var(--color-primario); 
+            margin: 0 0 12px 0; 
+            font-size: 14px; 
+            padding-bottom: 4px; 
+            text-transform: uppercase;
+        }
+
+        /* GRILLAS DE DISEÑO (RESPONSIVE) */
+        .grilla-doble { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; align-items: end; }
+        .grilla-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; align-items: end; }
+        .grilla-cuadruple { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-bottom: 8px; align-items: center; }
+
+        /* FORMULARIOS: INPUTS Y LABELS */
+        label { font-weight: bold; font-size: 10px; display: block; margin-bottom: 2px; color: #34495e; }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 7px; 
+            border: 1px solid var(--color-borde); 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 11px; 
+            background: #fff; 
+        }
+
+        input:focus, select:focus { 
+            border-color: var(--color-exito); 
+            outline: none; 
+            box-shadow: 0 0 4px rgba(39, 174, 96, 0.2);
+        }
+
+        /* TABLAS DE CONSUMO DE MATERIAL */
+        .tabla-reporte { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10px; }
+        .tabla-reporte th { background: #eaeded; border: 1px solid var(--color-borde); padding: 5px; color: var(--color-primario); }
+        .tabla-reporte td { border: 1px solid var(--color-borde); padding: 0; }
+        .tabla-reporte input, .tabla-reporte select { border: none; padding: 5px; background: transparent; }
+
+        /* BLOQUES CONTENEDORES INTERNOS */
+        .caja-gris { 
+            background: #f8f9f9; 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid #e5e8e8; 
+            margin-bottom: 12px; 
+        }
+
+        .titulo-interno { 
+            font-weight: bold; 
+            color: #16a085; 
+            margin-bottom: 8px; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+        }
+
+        .fila-item-calidad { 
+            display: grid; 
+            grid-template-columns: 1fr 90px; 
+            align-items: center; 
+            padding: 6px 0; 
+            border-bottom: 1px dashed #d5dbdb; 
+        }
+
+        .opciones-radio { display: flex; gap: 10px; font-size: 10px; }
+        .opciones-radio input { width: auto; margin: 0 4px 0 0; }
+
+        /* BOTONES */
+        .boton-accion { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            margin-top: 15px; 
+            color: white; 
+            background: var(--color-exito); 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+
+        .boton-accion:active { transform: scale(0.98); }
+
+        .texto-tiempo { 
+            font-weight: bold; 
+            color: #c0392b; 
+            font-size: 12px; 
+            text-align: right; 
+            margin: 5px 0;
+        }
+
+        .banner-resumen { 
+            background: #d4efdf; 
+            padding: 8px; 
+            border-radius: 4px; 
+            border: 1px solid #a9dfbf; 
+            margin-bottom: 15px; 
+            font-size: 11px; 
+            color: #1e8449; 
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor-principal">
+    <div class="encabezado">
+        <img src="https://wal-35.github.io/orden_produccion/logoiltec.png" alt="ILTEC Logo">
+        <strong>REPORTE DE PRODUCCIÓN</strong>
+    </div>
+
+    <div class="seccion-paso seccion-activa" id="paso_1">
+        <h3>1. Programación de Orden</h3>
+        <label>Item de la Pieza:</label>
+        <input type="text" id="input_item" placeholder="Ej: 10811D" style="margin-bottom:10px;">
+        
+        <label>Plano (Enlace de GitHub):</label>
+        <input type="url" id="input_plano" placeholder="Pegue el link del PDF aquí..." style="margin-bottom:10px;">
+        
+        <div class="grilla-triple">
+            <div><label>Cantidad:</label><input type="number" id="input_cantidad"></div>
+            <div>
+                <label>Material:</label>
+                <select id="select_material">
+                    <option value="CR (Cold Rolled)">CR (Cold Rolled)</option>
+                    <option value="HR (Hot Rolled)">HR (Hot Rolled)</option>
+                    <option value="GALV (Galvanizado)">GALV (Galvanizado)</option>
+                    <option value="ALUM (Aluminio)">ALUM (Aluminio)</option>
+                    <option value="INOX (Acero Inoxidable)">INOX (Acero Inoxidable)</option>
+                </select>
+            </div>
+            <div>
+                <label>Calibre:</label>
+                <select id="select_calibre">
+                    <option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>22</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-accion" onclick="procesarPaso1()">
+            Enviar a Alistamiento <i class="material-icons">send</i>
+        </button>
+    </div>
+
+    <div class="seccion-paso" id="paso_2">
+        <h3>2. Área: Alistamiento</h3>
+        <div id="resumen_paso_2" class="banner-resumen"></div>
+        
+        <div class="caja-gris">
+            <label>Técnico Alistador:</label>
+            <select id="alistador_nombre" style="margin-bottom:10px;">
+                </select>
+            <label>Observaciones Técnicas:</label>
+            <textarea id="alistador_observacion" rows="2" placeholder="Novedades de herramienta o material..."></textarea>
+        </div>
+        <button class="boton-accion" style="background:#2980b9;" onclick="procesarPaso2()">
+            Enviar a Máquina <i class="material-icons">forward</i>
+        </button>
+    </div>
+
+    <div class="seccion-paso" id="paso_3">
+        <h3>3. Área: Punzonado / Láser</h3>
+        <div id="resumen_paso_3" class="banner-resumen"></div>
+        
+        <div class="caja-gris">
+            <div class="grilla-doble">
+                <div><label>Operador 1:</label><select id="punzonado_op1" class="lista-operarios"></select></div>
+                <div><label>Operador 2:</label><select id="punzonado_op2" class="lista-operarios"></select></div>
+            </div>
+            <label>Máquina Utilizada:</label>
+            <select id="punzonado_maquina" style="margin-bottom:10px;">
+                <option value="">Seleccione Máquina...</option>
+                <option>Punzonadora 1</option>
+                <option>Punzonadora 2</option>
+                <option>Máquina Láser</option>
+            </select>
+            
+            <div class="grilla-cuadruple">
+                <div><label>F. Inicio:</label><input type="date" id="punz_fecha_ini"></div>
+                <div><label>H. Inicio:</label><input type="time" id="punz_hora_ini" onchange="gestionarTiempo('punz_hora_ini', 'punz_hora_fin', 'punz_total_texto')"></div>
+                <div><label>F. Final:</label><input type="date" id="punz_fecha_fin"></div>
+                <div><label>H. Final:</label><input type="time" id="punz_hora_fin" onchange="gestionarTiempo('punz_hora_ini', 'punz_hora_fin', 'punz_total_texto')"></div>
+            </div>
+            <div id="punz_total_texto" class="texto-tiempo">Tiempo de Trabajo: 0h 0m</div>
+        </div>
+
+        <div class="caja-gris">
+            <div class="titulo-interno">Registro de Tiempos Muertos</div>
+            <div class="grilla-cuadruple"><label>Motivo</label><label>Inicio</label><label>Final</label><label>Total</label></div>
+            <div class="grilla-cuadruple">
+                <select id="punz_paro1_cod" class="lista-motivos-paro"></select>
+                <input type="time" id="punz_paro1_ini" onchange="gestionarTiempo('punz_paro1_ini', 'punz_paro1_fin', 'punz_paro1_res')">
+                <input type="time" id="punz_paro1_fin" onchange="gestionarTiempo('punz_paro1_ini', 'punz_paro1_fin', 'punz_paro1_res')">
+                <div id="punz_paro1_res" style="font-size:10px; text-align:center; font-weight:bold;">0h 0m</div>
+            </div>
+        </div>
+
+        <div class="caja-gris" style="border-color:#3498db; background:#ebf5fb;">
+            <div class="titulo-interno" style="color:#2980b9;">Consumo de Lámina / Retal</div>
+            <table class="tabla-reporte">
+                <thead id="cabecera_tabla_material"></thead>
+                <tbody id="cuerpo_tabla_material"></tbody>
+            </table>
+        </div>
+
+        <div class="caja-gris">
+            <div class="grilla-doble">
+                <div><label>Conforme (Und):</label><input type="number" id="punz_cantidad_ok"></div>
+                <div><label>No Conforme (Und):</label><input type="number" id="punz_cantidad_nc"></div>
+            </div>
+            <label>Tipo de Defecto Detectado:</label>
+            <div class="grilla-triple">
+                <select id="punz_defecto_tipo" class="lista-defectos-tipo"></select>
+                <select id="punz_defecto_causa" class="lista-defectos-causa"></select>
+                <select id="punz_defecto_accion" class="lista-defectos-accion"></select>
+            </div>
+        </div>
+
+        <button class="boton-accion" onclick="procesarPaso3()">
+            Enviar a Plegado <i class="material-icons">forward</i>
+        </button>
+    </div>
+
+    <div class="seccion-paso" id="paso_4">
+        <h3>4. Área: Plegado</h3>
+        <div id="resumen_paso_4" class="banner-resumen"></div>
+        
+        <div class="caja-gris">
+            <div class="grilla-doble">
+                <div><label>Operador 1:</label><select id="plegado_op1" class="lista-operarios"></select></div>
+                <div><label>Operador 2:</label><select id="plegado_op2" class="lista-operarios"></select></div>
+            </div>
+            <label>Máquina Plegadora:</label>
+            <select id="plegado_maquina" style="margin-bottom:10px;">
+                <option value="">Seleccione Plegadora...</option>
+                <option>Plegadora 1</option><option>Plegadora 2</option><option>Plegadora 3</option>
+            </select>
+            <div class="grilla-cuadruple">
+                <div><label>F. Inicio:</label><input type="date" id="pleg_fecha_ini"></div>
+                <div><label>H. Inicio:</label><input type="time" id="pleg_hora_ini" onchange="gestionarTiempo('pleg_hora_ini', 'pleg_hora_fin', 'pleg_total_texto')"></div>
+                <div><label>F. Final:</label><input type="date" id="pleg_fecha_fin"></div>
+                <div><label>H. Final:</label><input type="time" id="pleg_hora_fin" onchange="gestionarTiempo('pleg_hora_ini', 'pleg_hora_fin', 'pleg_total_texto')"></div>
+            </div>
+            <div id="pleg_total_texto" class="texto-tiempo">Tiempo de Trabajo: 0h 0m</div>
+        </div>
+
+        <div class="caja-gris">
+            <div class="grilla-doble">
+                <div><label>Conforme (Und):</label><input type="number" id="pleg_cantidad_ok"></div>
+                <div><label>No Conforme (Und):</label><input type="number" id="pleg_cantidad_nc"></div>
+            </div>
+            <label>Observaciones de Cierre:</label>
+            <textarea id="pleg_observacion" rows="2"></textarea>
+        </div>
+
+        <button class="boton-accion" style="background:#e67e22;" onclick="procesarPaso4()">
+            Finalizar Reporte y Enviar <i class="material-icons">done_all</i>
+        </button>
+    </div>
+</div>
+
+<script>
+    /* CONFIGURACIÓN GLOBAL */
+    const CONFIG = {
+        URL_SITIO: "https://wal-35.github.io/orden_produccion/reporte_index.html",
+        WHATSAPP_ADMIN: "573182150158"
+    };
+
+    /* LISTAS DESPLEGABLES (PLANTILLAS) */
+    const LISTAS = {
+        motivosParo: `<option value="">Cód...</option><option>01 - Falla Eléctrica</option><option>02 - Falla Mecánica</option><option>03 - Falta Material</option><option>04 - Ajuste Máquina</option><option>05 - Cambio Herramienta</option><option>06 - Limpieza</option>`,
+        operarios: `<option value="">Seleccione...</option><option value="Ninguno">Ninguno</option><option>Juan Paz</option><option>Carlos Gomez</option><option>Andres Ruiz</option><option>Pedro Lopez</option>`,
+        materialTipo: `<option value="">Sel...</option><option>Lámina</option><option>Retal</option>`,
+        defectos: {
+            tipo: `<option value="">Tipo Defecto...</option><option>Rebabas</option><option>Rayas/Golpes</option><option>Medida errónea</option>`,
+            causa: `<option value="">Causa...</option><option>Herramienta desgastada</option><option>Error Programa</option>`,
+            accion: `<option value="">Acción...</option><option>Ajustar herramienta</option><option>Reprogramar</option>`
+        }
+    };
+
+    /* LÓGICA DE TIEMPOS */
+    function gestionarTiempo(idIni, idFin, idResultado) {
+        let h_inicio = document.getElementById(idIni).value;
+        let h_final = document.getElementById(idFin).value;
+        let contenedor = document.getElementById(idResultado);
+        
+        if(h_inicio && h_final) {
+            let [h1, m1] = h_inicio.split(':').map(Number);
+            let [h2, m2] = h_final.split(':').map(Number);
+            let diferenciaMs = (new Date(0,0,0,h2,m2)) - (new Date(0,0,0,h1,m1));
+            
+            if(diferenciaMs < 0) diferenciaMs += 24*60*60*1000; // Ajuste si pasa de medianoche
+            
+            let horas = Math.floor(diferenciaMs / 3600000);
+            let minutos = Math.floor((diferenciaMs % 3600000) / 60000);
+            
+            let resultadoStr = `${horas}h ${minutos}m`;
+            if(contenedor) {
+                if(idResultado.includes('total')) contenedor.innerText = "Tiempo de Trabajo: " + resultadoStr;
+                else contenedor.innerText = resultadoStr;
+            }
+            return resultadoStr;
+        }
+        return "0h 0m";
+    }
+
+    /* INICIALIZACIÓN AL CARGAR PÁGINA */
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Carga de listas desplegables en todo el documento
+        document.querySelectorAll('.lista-motivos-paro').forEach(s => s.innerHTML = LISTAS.motivosParo);
+        document.querySelectorAll('.lista-operarios').forEach(s => s.innerHTML = LISTAS.operarios);
+        document.getElementById('alistador_nombre').innerHTML = LISTAS.operarios;
+        document.querySelectorAll('.lista-defectos-tipo').forEach(s => s.innerHTML = LISTAS.defectos.tipo);
+        document.querySelectorAll('.lista-defectos-causa').forEach(s => s.innerHTML = LISTAS.defectos.causa);
+        document.querySelectorAll('.lista-defectos-accion').forEach(s => s.innerHTML = LISTAS.defectos.accion);
+
+        // Construcción de la tabla de materiales (Paso 3)
+        const tablaCuerpo = document.getElementById('cuerpo_tabla_material');
+        document.getElementById('cabecera_tabla_material').innerHTML = `<tr><th>Origen</th><th>Medida</th><th>Cant.Sobra</th><th>Med.Sobra</th><th>Pzs/Lám</th></tr>`;
+        for (let i = 1; i <= 3; i++) {
+            tablaCuerpo.innerHTML += `<tr>
+                <td><select id="mat_origen_${i}">${LISTAS.materialTipo}</select></td>
+                <td><input type="text" id="mat_medida_${i}"></td>
+                <td><input type="number" id="mat_sobra_cant_${i}"></td>
+                <td><input type="text" id="mat_sobra_med_${i}"></td>
+                <td><input type="number" id="mat_piezas_${i}"></td>
+            </tr>`;
+        }
+
+        // Gestión de Navegación por URL
+        let pasoActual = urlParams.get('s') || '1';
+        if(pasoActual !== '1') {
+            document.querySelectorAll('.seccion-paso').forEach(sec => sec.classList.remove('seccion-activa'));
+            document.getElementById('paso_' + pasoActual).classList.add('seccion-activa');
+
+            // Renderizar el banner informativo (Truco del visor de Google incluido)
+            let linkPlano = urlParams.get('p');
+            let visorGoogle = `https://docs.google.com/viewer?url=${encodeURIComponent(linkPlano)}&embedded=true`;
+            let infoHtml = `<b>ITEM:</b> ${urlParams.get('i')} | <b>CANT:</b> ${urlParams.get('c')} | <b>MAT:</b> ${urlParams.get('m')} Cal ${urlParams.get('ca')}<br>
+                           <a href="${visorGoogle}" target="_blank" style="color:#2980b9; font-weight:bold; text-decoration:underline;">📄 VER PLANO ONLINE</a>`;
+            
+            let banner = document.getElementById('resumen_paso_' + pasoActual);
+            if(banner) banner.innerHTML = infoHtml;
+        }
+    };
+
+    /* PROCESAMIENTO DE PASOS (ENVÍO A WHATSAPP) */
+
+    function procesarPaso1() {
+        const item = document.getElementById('input_item').value;
+        const cant = document.getElementById('input_cantidad').value;
+        const plano = document.getElementById('input_plano').value;
+        const mat = document.getElementById('select_material').value;
+        const cal = document.getElementById('select_calibre').value;
+
+        if(!item || !plano) return alert("Error: El Item y el Plano son obligatorios.");
+
+        let urlDestino = `${CONFIG.URL_SITIO}?s=2&i=${encodeURIComponent(item)}&c=${cant}&p=${encodeURIComponent(plano)}&m=${encodeURIComponent(mat)}&ca=${cal}`;
+        let mensaje = `📋 *NUEVA ORDEN DE PRODUCCIÓN*\n*Item:* ${item}\n*Cant:* ${cant}\n*Mat:* ${mat} Cal ${cal}\n\n👉 *Abrir Reporte:* ${urlDestino}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+    }
+
+    function procesarPaso2() {
+        const params = new URLSearchParams(window.location.search);
+        const alistador = document.getElementById('alistador_nombre').value || 'N/A';
+        const obs = document.getElementById('alistador_observacion').value || 'Sin novedades';
+
+        params.set('s', '3'); // Pasamos al área 3
+        params.append('al_nom', alistador);
+        params.append('al_obs', obs);
+
+        let urlDestino = `${CONFIG.URL_SITIO}?${params.toString()}`;
+        let mensaje = `🔧 *ALISTAMIENTO COMPLETADO*\n*Item:* ${params.get('i')}\n*Alistó:* ${alistador}\n\n👉 *Paso Punzonado:* ${urlDestino}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+    }
+
+    // Nota: Las funciones procesarPaso3 y 4 siguen la misma lógica, empaquetando 
+    // todos los datos de la URL anterior más los nuevos campos del formulario.
+
+    function procesarPaso3() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('s', '4');
+        
+        // Recolección de datos de Punzonado
+        params.append('pu_maq', document.getElementById('punzonado_maquina').value);
+        params.append('pu_cant', document.getElementById('punz_cantidad_ok').value);
+        params.append('pu_tiempo', gestionarTiempo('punz_hora_ini', 'punz_hora_fin', ''));
+        
+        let urlDestino = `${CONFIG.URL_SITIO}?${params.toString()}`;
+        let mensaje = `⚡ *PUNZONADO TERMINADO*\n*Item:* ${params.get('i')}\n*Cant:* ${document.getElementById('punz_cantidad_ok').value}\n\n👉 *Siguiente Paso Plegado:* ${urlDestino}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`);
+    }
+
+    function procesarPaso4() {
+        const params = new URLSearchParams(window.location.search);
+        const item = params.get('i');
+        const cantFinal = document.getElementById('pleg_cantidad_ok').value;
+        const tiempoPleg = gestionarTiempo('pleg_hora_ini', 'pleg_hora_fin', '');
+
+        const reporteFinal = `📊 *REPORTE FINAL DE PRODUCCIÓN* 📊
+*Item:* ${item} | *Cant:* ${params.get('c')}
+*Material:* ${params.get('m')} - Cal: ${params.get('ca')}
+➖➖➖➖➖➖➖➖➖➖
+🔨 *PUNZONADO:* ${params.get('pu_cant')} Und en ${params.get('pu_tiempo')}
+📐 *PLEGADO:* ${cantFinal} Und en ${tiempoPleg}
+👤 *Alistador:* ${params.get('al_nom')}
+➖➖➖➖➖➖➖➖➖➖
+🏁 *REPORTE LISTO PARA BASE DE DATOS*`;
+
+        window.open(`https://wa.me/${CONFIG.WHATSAPP_ADMIN}?text=${encodeURIComponent(reporteFinal)}`);
+    }
+</script>
+</body>
+</html>
