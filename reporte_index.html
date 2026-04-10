@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>ILTEC - Reporte Diario de Producción</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root { --p: #2c3e50; --a: #27ae60; --b: #ecf0f1; --bo: #bdc3c7; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--b); margin: 0; padding: 10px; font-size: 14px; }
+        .con { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .h { background: var(--p); color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .h img { max-height: 35px; background: white; padding: 2px; border-radius: 4px; }
+        #loginModal { display: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.5) }
+        .modal-content input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }/* Evita que el input se salga del cuadro */
+        .modal-content button { width: 100%; padding: 12px;  background-color: #007bff;  color: white; border: none; border-radius: 6px;cursor: pointer; font-weight: bold;margin-top: 10px;}
+        .sec { padding: 15px; display: none; }
+        .act { display: block; }
+        h3 { border-bottom: 2px solid var(--a); color: var(--p); margin: 0 0 12px 0; font-size: 14px; padding-bottom: 4px; text-transform: uppercase;}
+        .g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; align-items: end; }
+        .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; align-items: end; }
+        .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-bottom: 8px; align-items: center; }
+        label { font-weight: bold; font-size: 12px; display: block; margin-bottom: 2px; color: #34495e; }
+        input, select, textarea { width: 100%; padding: 6px; border: 1px solid var(--bo); border-radius: 4px; box-sizing: border-box; font-size: 14px; background: #fff; }
+        input:focus, select:focus { border-color: var(--a); outline: none; }
+        .t-rep { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10px; }
+        .t-rep th { background: #eaeded; border: 1px solid var(--bo); padding: 5px; color: var(--p); }
+        .t-rep td { border: 1px solid var(--bo); padding: 0; }
+        .t-rep input, .t-rep select { border: none; padding: 5px; background: transparent; width: 100%; box-sizing: border-box;}
+        .seccion-caja { background: #f8f9f9; padding: 10px; border-radius: 6px; border: 1px solid #e5e8e8; margin-bottom: 12px; }
+        .titulo-caja { font-weight: bold; color: #16a085; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; }
+        .i-it { display: grid; grid-template-columns: 1fr 90px; align-items: center; padding: 4px 0; border-bottom: 1px dashed #d5dbdb; }
+        .ch { display: flex; gap: 10px; font-size: 10px; }
+        .ch input { width: auto; margin: 0 4px 0 0; }
+        .p-ro { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 4px; margin-bottom: 4px; align-items: center; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; color: white; background: #27ae60; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;}
+        .tot-t { font-weight: bold; color: #c0392b; font-size: 12px; text-align: right; margin-bottom: 5px; margin-top: 2px;}
+        .info-top { background: #d4efdf; padding: 8px; border-radius: 4px; border: 1px solid #a9dfbf; margin-bottom: 15px; font-size: 12px; color: #1e8449; }
+    </style>
+</head>
+<body>
+
+<div class="con">
+    <header class="h">
+        <img src="https://wal-35.github.io/orden_produccion/logoiltec.png" alt="ILTEC">
+        <strong>REPORTE DE PRODUCCIÓN</strong>
+    </header>
+    <div id="loginModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Acceso al Sistema ILTEC</h3>
+        <p>Por favor, identifíquese para continuar</p>
+        <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+        <input type="password" id="loginPass" placeholder="Contraseña" required>
+        <button type="button" id="btnLogin" onclick="ejecutarLogin()">Entrar</button>
+    </div>
+</div>
+
+    <div class="sec act" id="p1">
+        <h3>1. Datos Iniciales (Programador)</h3>
+        <label>Item de la Pieza:</label>
+        <input type="text" id="i_i" placeholder="Ej: 10811D" style="margin-bottom:10px;">
+        
+        <label>Plano (Link GitHub):</label>
+        <input type="url" id="i_p" placeholder="Ej: https://wal-35.github.io/planos/10811D.pdf" style="margin-bottom:10px;">
+
+        <!-- SECCIÓN PROGRAMADOR -->
+        <div class="g3">
+            <div><label>Cantidad:</label><input type="number" id="i_c"></div>
+            <div><label>Tipo Material:</label>
+                <select id="i_m">
+                    <option value="CR (Cold Rolled)">CR (Cold Rolled)</option>
+                    <option value="HR (Hot Rolled)">HR (Hot Rolled)</option>
+                    <option value="GALV (Galvanizado)">GALV (Galvanizado)</option>
+                    <option value="ALUM (Aluminio)">ALUM (Aluminio)</option>
+                    <option value="INOX (Acero Inoxidable)">INOX (Acero Inoxidable)</option>
+                </select>
+            </div>
+            <div><label>Calibre:</label><select id="i_ca"><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>22</option></select></div>
+        </div>
+        <button class="btn" onclick="envP1()">Enviar a Alistamiento <i class="material-icons">send</i></button>
+    </div>
+
+    <!-- SECCIÓN ALISTAMIENTO -->
+    <div class="sec" id="p2">
+        <h3>2. Área: Alistamiento</h3>
+        <div id="inf2" class="info-top"></div>
+        
+        <div class="seccion-caja">
+            <label>Joven Alistador:</label>
+            <select id="al_op" style="margin-bottom:10px;">
+                <option value="">Seleccione...</option>
+                <option>Alistador 1</option>
+                <option>Alistador 2</option>
+            </select>
+            <label>Observaciones de Alistamiento:</label>
+            <textarea id="al_o" rows="2" placeholder="Novedades de la herramienta..."></textarea>
+        </div>
+        <button class="btn" style="background:#2980b9;" onclick="envP2()">Enviar a Máquina (Punzonado/Láser) <i class="material-icons">forward</i></button>
+    </div>
+
+    <!-- SECCIÓN PUNZONADO -->
+    <div class="sec" id="p3">
+        <h3>3. Área: Punzonado / Láser</h3>
+        <div id="inf3" class="info-top"></div>
+        
+        <div class="seccion-caja">
+            <div class="g">
+                <div><label>Operario 1:</label><select id="pu_op1" class="s-op"></select></div>
+                <div><label>Operario 2:</label><select id="pu_op2" class="s-op"></select></div>
+            </div>
+            <label>Máquina Asignada:</label>
+            <select id="pu_mq" style="margin-bottom:10px;">
+                <option value="">Seleccione Máquina...</option>
+                <option>Punzonadora 1</option>
+                <option>Punzonadora 2</option>
+                <option>Máquina Láser</option>
+            </select>
+            
+            <div class="g4">
+                <div><label>F. Inicio:</label><input type="date" id="pu_di"></div>
+                <div><label>H. Inicio:</label><input type="time" id="pu_ti" onchange="calT('pu_ti', 'pu_tf', 'pu_tot')"></div>
+                <div><label>F. Final:</label><input type="date" id="pu_df"></div>
+                <div><label>H. Final:</label><input type="time" id="pu_tf" onchange="calT('pu_ti', 'pu_tf', 'pu_tot')"></div>
+            </div>
+            <div id="pu_tot" class="tot-t">Tiempo de Trabajo: 0h 0m</div>
+        </div>
+
+        <div class="seccion-caja">
+            <div class="titulo-caja">Registro de Paros</div>
+            <div class="p-ro"><label>Código Paro</label><label>H. Inicio</label><label>H. Final</label><label>Tiempo</label></div>
+            <div class="p-ro">
+                <select id="pu_p1_c" class="s-mo"></select>
+                <input type="time" id="pu_p1_i" onchange="calT('pu_p1_i', 'pu_p1_f', 'pu_p1_t')">
+                <input type="time" id="pu_p1_f" onchange="calT('pu_p1_i', 'pu_p1_f', 'pu_p1_t')">
+                <div id="pu_p1_t" style="font-size:10px;text-align:center;font-weight:bold;">0h 0m</div>
+            </div>
+            <div class="p-ro">
+                <select id="pu_p2_c" class="s-mo"></select>
+                <input type="time" id="pu_p2_i" onchange="calT('pu_p2_i', 'pu_p2_f', 'pu_p2_t')">
+                <input type="time" id="pu_p2_f" onchange="calT('pu_p2_i', 'pu_p2_f', 'pu_p2_t')">
+                <div id="pu_p2_t" style="font-size:10px;text-align:center;font-weight:bold;">0h 0m</div>
+            </div>
+        </div>
+
+        <div class="seccion-caja" style="border-color:#3498db; background:#ebf5fb;">
+            <div class="titulo-caja" style="color:#2980b9;">Material y Calibre (Retal / Lámina)</div>
+            <table class="t-rep"><thead id="th_pu"></thead><tbody id="f_pu"></tbody></table>
+        </div>
+
+        <div class="seccion-caja">
+            <div class="g">
+                <div><label>Producto Conforme (Cant):</label><input type="number" id="pu_c"></div>
+                <div><label>Producto NO Conforme (Cant):</label><input type="number" id="pu_nc"></div>
+            </div>
+            <label>Registro de Defectos:</label>
+            <div class="g3">
+                <select id="pu_dt" class="s-def-t"></select>
+                <select id="pu_dc" class="s-def-c"></select>
+                <select id="pu_da" class="s-def-a"></select>
+            </div>
+        </div>
+
+        <div class="seccion-caja">
+            <div class="titulo-caja">Inspección Calidad</div>
+            <div class="i-it"><span>Medidas</span><div class="ch"><label><input type="radio" name="pu_qm" value="CUMPLE"> Cumple</label><label><input type="radio" name="pu_qm" value="NO CUMPLE"> No Cumple</label></div></div>
+            <div class="i-it"><span>Material</span><div class="ch"><label><input type="radio" name="pu_qmt" value="CUMPLE"> Cumple</label><label><input type="radio" name="pu_qmt" value="NO CUMPLE"> No Cumple</label></div></div>
+            <div class="i-it"><span>Calibre</span><div class="ch"><label><input type="radio" name="pu_qc" value="CUMPLE"> Cumple</label><label><input type="radio" name="pu_qc" value="NO CUMPLE"> No Cumple</label></div></div>
+        </div>
+
+        <label>Observaciones:</label><textarea id="pu_o" rows="2"></textarea>
+        <button class="btn" onclick="envP3()">Enviar a Plegado <i class="material-icons">forward</i></button>
+    </div>
+
+    <!-- SECCIÓN PLEGADO -->
+    <div class="sec" id="p4">
+        <h3>4. Área: Plegado</h3>
+        <div id="inf4" class="info-top"></div>
+        
+        <div class="seccion-caja">
+            <div class="g">
+                <div><label>Operario 1:</label><select id="pl_op1" class="s-op"></select></div>
+                <div><label>Operario 2:</label><select id="pl_op2" class="s-op"></select></div>
+            </div>
+            <label>Máquina Asignada:</label>
+            <select id="pl_mq" style="margin-bottom:10px;">
+                <option value="">Seleccione Máquina...</option>
+                <option>Plegadora 1</option>
+                <option>Plegadora 2</option>
+                <option>Plegadora 3</option>
+            </select>
+            
+            <div class="g4">
+                <div><label>F. Inicio:</label><input type="date" id="pl_di"></div>
+                <div><label>H. Inicio:</label><input type="time" id="pl_ti" onchange="calT('pl_ti', 'pl_tf', 'pl_tot')"></div>
+                <div><label>F. Final:</label><input type="date" id="pl_df"></div>
+                <div><label>H. Final:</label><input type="time" id="pl_tf" onchange="calT('pl_ti', 'pl_tf', 'pl_tot')"></div>
+            </div>
+            <div id="pl_tot" class="tot-t">Tiempo de Trabajo: 0h 0m</div>
+        </div>
+
+        <div class="seccion-caja">
+            <div class="titulo-caja">Registro de Paros</div>
+            <div class="p-ro"><label>Código Paro</label><label>H. Inicio</label><label>H. Final</label><label>Tiempo</label></div>
+            <div class="p-ro">
+                <select id="pl_p1_c" class="s-mo"></select>
+                <input type="time" id="pl_p1_i" onchange="calT('pl_p1_i', 'pl_p1_f', 'pl_p1_t')">
+                <input type="time" id="pl_p1_f" onchange="calT('pl_p1_i', 'pl_p1_f', 'pl_p1_t')">
+                <div id="pl_p1_t" style="font-size:10px;text-align:center;font-weight:bold;">0h 0m</div>
+            </div>
+        </div>
+
+        <div class="seccion-caja">
+            <div class="g">
+                <div><label>Producto Conforme (Cant):</label><input type="number" id="pl_c"></div>
+                <div><label>Producto NO Conforme (Cant):</label><input type="number" id="pl_nc"></div>
+            </div>
+            <label>Registro de Defectos Plegado:</label>
+            <div class="g3">
+                <select id="pl_dt" class="s-def-t"></select>
+                <select id="pl_dc" class="s-def-c"></select>
+                <select id="pl_da" class="s-def-a"></select>
+            </div>
+        </div>
+
+        <div class="seccion-caja">
+            <div class="titulo-caja">Inspección Calidad Plegado</div>
+            <div class="i-it"><span>Medidas</span><div class="ch"><label><input type="radio" name="pl_qm" value="CUMPLE"> Cumple</label><label><input type="radio" name="pl_qm" value="NO CUMPLE"> No Cumple</label></div></div>
+            <div class="i-it"><span>Material</span><div class="ch"><label><input type="radio" name="pl_qmt" value="CUMPLE"> Cumple</label><label><input type="radio" name="pl_qmt" value="NO CUMPLE"> No Cumple</label></div></div>
+            <div class="i-it"><span>Calibre</span><div class="ch"><label><input type="radio" name="pl_qc" value="CUMPLE"> Cumple</label><label><input type="radio" name="pl_qc" value="NO CUMPLE"> No Cumple</label></div></div>
+        </div>
+
+        <div class=""></div>
+
+        <label>Observaciones Plegado:</label><textarea id="pl_o" rows="2"></textarea>
+        <button class="btn" style="background:#e67e22;" onclick="envP4()">Finalizar Reporte y Enviar a DB <i class="material-icons">done_all</i></button>
+    </div>
+
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const baseUrl = "https://wal-35.github.io/orden_produccion/reporte_index.html"; 
+    
+    // Listas desplegables compartidas
+    const opcMotivos = `<option value="">Cód...</option><option>01 - Falla Eléctrica</option><option>02 - Falla Mecánica</option><option>03 - Falta Material</option><option>04 - Ajuste Máquina</option><option>05 - Cambio Herramienta</option><option>06 - Limpieza</option><option>07 - Reunión/Capacitación</option><option>08 - Pausa Activa/Baño</option>`;
+    const opcLam = `<option value="">Sel...</option><option>Lámina</option><option>Retal</option>`;
+    const opcOps = `<option value="">Seleccione...</option><option value="Ninguno">Ninguno</option><option>Juan Paz</option><option>Carlos Gomez</option><option>Andres Ruiz</option><option>Pedro Lopez</option>`;
+    
+    const defTipos = `<option value="">Tipo Defecto...</option><option>Rebabas</option><option>Rayas/Golpes</option><option>Medida fuera de tolerancia</option><option>Deformación</option><option>Falta de perforación</option><option>Ángulo incorrecto</option>`;
+    const defCausas = `<option value="">Causa...</option><option>Herramienta desgastada</option><option>Error de programación</option><option>Mal posicionamiento</option><option>Material defectuoso</option><option>Falla de máquina</option><option>Ajuste de galga</option>`;
+    const defAcciones = `<option value="">Acción...</option><option>Ajustar herramienta</option><option>Reprogramar pieza</option><option>Capacitar operario</option><option>Mantenimiento preventivo</option><option>Corregir tope</option><option>Cambiar material</option>`;
+
+    function calT(idIni, idFin, idRes) {
+        let ti = document.getElementById(idIni).value;
+        let tf = document.getElementById(idFin).value;
+        let objRes = document.getElementById(idRes);
+        if(ti && tf) {
+            let [h1, m1] = ti.split(':').map(Number);
+            let [h2, m2] = tf.split(':').map(Number);
+            let d = (new Date(0,0,0,h2,m2)) - (new Date(0,0,0,h1,m1));
+            if(d < 0) d += 24*60*60*1000; 
+            let hh = Math.floor(d/3600000);
+            let mm = Math.floor((d%3600000)/60000);
+            objRes.innerText = `${hh}h ${mm}m`;
+            return `${hh}h ${mm}m`; 
+        }
+        return "0h 0m";
+    }
+
+    function getRadioVal(name) {
+        let radios = document.getElementsByName(name);
+        for(let r of radios) { if(r.checked) return r.value; }
+        return "N/A";
+    }
+
+    window.onload = () => {
+        // Renderizado de tabla de materiales en Punzonado
+        const tbPu = document.getElementById('f_pu');
+        if(tbPu){
+            document.getElementById('th_pu').innerHTML = `<tr><th>Lám/Ret</th><th>Medidas</th><th>Cant. Sobra</th><th>Med. Sobra</th><th>Pzs/Lám</th></tr>`;
+            for (let i = 1; i <= 6; i++) {
+                tbPu.innerHTML += `<tr>
+                    <td><select id="pu_lr${i}">${opcLam}</select></td>
+                    <td><input type="text" id="pu_md${i}"></td>
+                    <td><input type="number" id="pu_cs${i}"></td>
+                    <td><input type="text" id="pu_ms${i}"></td>
+                    <td><input type="number" id="pu_pz${i}"></td>
+                </tr>`;
+            }
+        }
+
+        // Llenado de todos los selects por clase
+        document.querySelectorAll('.s-mo').forEach(s => s.innerHTML = opcMotivos);
+        document.querySelectorAll('.s-op').forEach(s => s.innerHTML = opcOps);
+        document.querySelectorAll('.s-def-t').forEach(s => s.innerHTML = defTipos);
+        document.querySelectorAll('.s-def-c').forEach(s => s.innerHTML = defCausas);
+        document.querySelectorAll('.s-def-a').forEach(s => s.innerHTML = defAcciones);
+        
+        // Manejo de navegación entre pasos
+        let st = urlParams.get('s') || '1';
+        if(st !== '1') {
+            document.querySelectorAll('.sec').forEach(d => d.classList.remove('act'));
+            document.getElementById('p'+st).classList.add('act');
+            
+            let linkPlanoNormal = urlParams.get('p');
+            let linkPlanoVisor = `https://docs.google.com/viewer?url=${encodeURIComponent(linkPlanoNormal)}&embedded=true`;
+            let infoBase = `<b>Item:</b> ${urlParams.get('i')} | <b>Cant:</b> ${urlParams.get('c')} | <b>Mat:</b> ${urlParams.get('m')} Cal ${urlParams.get('ca')}<br><a href="${linkPlanoVisor}" target="_blank" style="color:#2980b9; font-weight:bold; text-decoration:underline;">📄 Ver Plano (Online)</a>`;
+            
+            if(document.getElementById('inf'+st)) document.getElementById('inf'+st).innerHTML = infoBase;
+        }
+    };
+
+    /* ─── PROGRAMADOR ─── */
+    function envP1() {
+        const i = document.getElementById('i_i').value;
+        const c = document.getElementById('i_c').value;
+        const p = document.getElementById('i_p').value;
+        const m = document.getElementById('i_m').value;
+        const ca = document.getElementById('i_ca').value;
+        if(!i || !p) return alert("Falta el Item o el link del Plano");
+        let link = `${baseUrl}?s=2&i=${encodeURIComponent(i)}&c=${c}&p=${encodeURIComponent(p)}&m=${encodeURIComponent(m)}&ca=${ca}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(`📋 *NUEVA ORDEN DE PRODUCCIÓN*\n*Item:* ${i}\n*Cant:* ${c}\n*Mat:* ${m} Cal ${ca}\n\n👉 *Joven Alistador, abre aquí:* \n${link}`)}`);
+    }
+
+    /* ─── ALISTADOR ─── */
+    function envP2() {
+        let params = new URLSearchParams(window.location.search);
+        params.set('s', '3');
+        params.set('al_op', document.getElementById('al_op').value || 'No Asignado');
+        params.set('al_o', document.getElementById('al_o').value || 'Con observaciones');
+        
+        let link = `${baseUrl}?${params.toString()}`;
+        let msg = `🔧 *HERRAMIENTA ALISTADA*\n*Item:* ${params.get('i')} | *Cant:* ${params.get('c')}\n*Alistó:* ${params.get('al_op')}\n*Observaciones:* ${params.get('al_o')} \n\n👉 *Operador de Máquina (Punzonado/Láser), abre aquí:* \n${link}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+    }
+
+    /* ─── PUNZONADOR ─── */
+    function envP3() {
+        let params = new URLSearchParams(window.location.search);
+        params.set('s', '4');
+        
+        // Datos Punzonado
+        let op1 = document.getElementById('pu_op1').value || 'N/A';
+        let op2 = document.getElementById('pu_op2').value || 'Ninguno';
+        params.set('pu_op', op2 !== 'Ninguno' ? `${op1} y ${op2}` : op1);
+        params.set('pu_mq', document.getElementById('pu_mq').value || 'N/A');
+        params.set('pu_tt', `${document.getElementById('pu_ti').value} a ${document.getElementById('pu_tf').value} = ${document.getElementById('pu_tot').innerText}`);
+        params.set('pu_c', document.getElementById('pu_c').value || '0');
+        params.set('pu_nc', document.getElementById('pu_nc').value || '0');
+        params.set('pu_o', document.getElementById('pu_o').value || 'Sin obs');
+
+        // Paros Punzonado
+        let p_paros = [];
+        for(let j=1; j<=2; j++) {
+            let c_paro = document.getElementById(`pu_p${j}_c`).value;
+            if(c_paro) p_paros.push(`${c_paro} (${document.getElementById(`pu_p${j}_t`).innerText})`);
+        }
+        params.set('pu_par', p_paros.join(' | ') || 'Ninguno');
+
+        // Tabla Materiales
+        let pu_mtb = [];
+        for(let k=1; k<=6; k++) {
+            let lr = document.getElementById(`pu_lr${k}`).value;
+            let md = document.getElementById(`pu_md${k}`).value;
+            if(md) pu_mtb.push(`${lr}|${md}|${document.getElementById(`pu_cs${k}`).value}|${document.getElementById(`pu_ms${k}`).value}|${document.getElementById(`pu_pz${k}`).value}`);
+        }
+
+        // DEFECTOS PUNZONADO
+        params.set('pu_mtb', pu_mtb.join('~'));
+        params.set('pu_def', document.getElementById('pu_dt').value ? `Tipo: ${document.getElementById('pu_dt').value} | Causa: ${document.getElementById('pu_dc').value} | Accion: ${document.getElementById('pu_da').value}` : 'Ninguno');
+        
+        // Calidad Punzonado
+        params.set('pu_q', `Med:${getRadioVal('pu_qm')}|Mat:${getRadioVal('pu_qmt')}|Cal:${getRadioVal('pu_qc')}`);
+
+        let link = `${baseUrl}?${params.toString()}`;
+        let msg = `✅ *PUNZONADO TERMINADO*\n*Item:* ${params.get('i')} | *Cant:* ${params.get('c')}\n*Material:* ${params.get('m')} | *Cal:* ${params.get('ca')}\n\n👉 *Operador Plegado, abre aquí para continuar:* \n${link}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+    }
+
+    /* ─── PLEGADOR ─── */
+    function envP4() {
+        const p = new URLSearchParams(window.location.search);
+        
+        // CORRECCIÓN: Extraer variables necesarias de la URL para la base de datos
+        let i = p.get('i') || "N/A";
+        let c = p.get('c') || "0";
+        let m = p.get('m') || "N/A";
+        let ca = p.get('ca') || "N/A";
+
+        // Captura completa de Plegado
+        let op1 = document.getElementById('pl_op1').value || 'N/A';
+        let op2 = document.getElementById('pl_op2').value || 'Ninguno';
+        let pl_op = op2 !== 'Ninguno' ? `${op1} y ${op2}` : op1;
+        let pl_tt = `${document.getElementById('pl_ti').value} a ${document.getElementById('pl_tf').value} = ${document.getElementById('pl_tot').innerText}`;
+        
+        // DEFECTOS PLEGADO
+        let pl_def_val = document.getElementById('pl_dt').value;
+        let pl_def_txt = pl_def_val ? `Tipo: ${pl_def_val} | Causa: ${document.getElementById('pl_dc').value} | Acción: ${document.getElementById('pl_da').value}` : 'Ninguno';
+
+        let matT = "";
+        if (p.get('pu_mtb')) {
+            matT = "\n📋 *CONSUMO DE MATERIAL:*\n";
+            p.get('pu_mtb').split('~').forEach(r => {
+                let [lr, md, cs, ms, pz] = r.split('|');
+                matT += `- ${lr} | Med: ${md} | Sobra: ${cs} (${ms}) | Pzs: ${pz}\n`;
+            });
+        }
+
+        const txt = `📊 *REPORTE FINAL DE PRODUCCIÓN*
+        *Item:* ${i} | *Cant:* ${c}
+        *Material:* ${m} | *Cal:* ${ca}
+        ➖➖➖➖➖➖➖➖➖➖
+        ⚙️ *ALISTAMIENTO*
+        👤 *Por:* ${p.get('al_op')} | *Obs:* ${p.get('al_o')}
+
+        🔨 *PUNZONADO / LÁSER*
+        👤 *Op:* ${p.get('pu_op')}
+        ⏱️ *T:* ${p.get('pu_tt')} | 🛑 *Paros:* ${p.get('pu_par')}
+        ${matT}
+        ✅ *Conf:* ${p.get('pu_c')} | ❌ *No Conf:* ${p.get('pu_nc')}
+        ⚠️ *Defectos:* ${p.get('pu_def')}
+        🔍 *Calidad:* ${p.get('pu_q')}
+        📝 *Obs:* ${p.get('pu_o')}
+
+        📐 *PLEGADO*
+        👤 *Op:* ${pl_op} | 🏭 *Máq:* ${document.getElementById('pl_mq').value}
+        ⏱️ *T:* ${pl_tt}
+        ✅ *Conf:* ${document.getElementById('pl_c').value || '0'} | ❌ *No Conf:* ${document.getElementById('pl_nc').value || '0'}
+        ⚠️ *Defectos:* ${pl_def_txt}
+        🔍 *Calidad:* Med:${getRadioVal('pl_qm')}|Mat:${getRadioVal('pl_qmt')}|Cal:${getRadioVal('pl_qc')}
+        📝 *Obs:* ${document.getElementById('pl_o').value || 'Sin obs'}
+
+        🏁 *REPORTE COMPLETADO*`;
+        
+        // 1. Empaquetar los datos de forma ESTRUCTURADA
+        const datosBD = {
+            // Encabezado del reporte
+            info_general: {
+                item: i,
+                cantidad: c,
+                material: m,
+                calibre: ca,
+                reporte_texto: txt, //Gurdamos tambien todo el texto armado
+                fecha_registro: new Date().toLocaleString()
+            },
+            // Sección de Alistamiento
+            alistamiento: {
+                personal: "Alistador 2",
+                observaciones: "En lámina cold roll 1000x900, Gamboa"
+            },
+            // Sección de Producción (Punzonado/Láser)
+            produccion: {
+                operarios: ["Juan Paz", "Carlos Gomez"],
+                tiempo_total: "0h 7m",
+                paros: "02 - Falla Mecánica (0h 3m)"
+            },
+            // Sección de Calidad y Consumo
+            calidad: {
+                conforme: 35,
+                no_conforme: 1,
+                defectos: "Rebabas",
+                inspeccion: {
+                    medida: "CUMPLE",
+                    material: "NO CUMPLE",
+                    calibre: "CUMPLE"
+                }
+            },
+            // Guardamos el texto de WhatsApp por si acaso
+            respaldo_whatsapp: txt 
+        };
+
+        // 2. Enviar a Firebase verificando que hay alguien logueado
+        if (window.auth.currentUser) {
+            window.addDoc(window.collection(window.db, "reportes_produccion"), datosBD)
+            .then(function() {
+                console.log("¡Éxito! Guardado en la nube de forma segura.");
+                window.open(`https://wa.me/573182150158?text=${encodeURIComponent(txt)}`);
+            })
+            .catch(function(error) {
+                console.error("Error de permisos: ", error);
+                alert("Error: No tienes permisos de escritura en la base de datos.");
+            });
+        } else {
+            alert("¡ACCESO DENEGADO! Debes iniciar sesión primero para poder reportar.");
+            // Aquí podrías llamar a una función de login
+        }
+    }
+</script>
+
+<script type="module">
+// 1. Importar el núcleo de Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+// 2. Importar las herramientas de la Base de Datos (Firestore)
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+// 3. Importar Authentication (NUEVO)
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+// Tu configuración de ILTEC
+const firebaseConfig = {
+  apiKey: "AIzaSyBMJQ6OfOACc-ODIKV5PEfGR5skyIDKdvE",
+  authDomain: "iltec-produccion.firebaseapp.com",
+  projectId: "iltec-produccion",
+  storageBucket: "iltec-produccion.firebasestorage.app",
+  messagingSenderId: "1025837711353",
+  appId: "1:1025837711353:web:858a3bb3f04c35270c8728"
+};
+
+// Inicializar la App, la Base de Datos y la Autenticación
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// --- NUEVO: VIGILANTE DE SESIÓN AUTOMÁTICA ---
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Si Firebase detecta que ya habías iniciado sesión antes, oculta el modal
+        document.getElementById('loginModal').style.display = 'none';
+        console.log("Sesión recordada automáticamente para:", user.email);
+    } else {
+        // Si no hay sesión (es la primera vez o cerraste sesión), muestra el modal
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+});
+
+// 4. Crear el "puente" para que tus otras funciones puedan usar Firebase
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+
+// NUEVO: Puente para la autenticación
+window.auth = auth;
+window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+
+// -------------------------------------------------------------
+// Función final para procesar el Login desde el Modal HTML
+// -------------------------------------------------------------
+window.ejecutarLogin = async function() {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPass').value;
+    const btn = document.getElementById('btnLogin');
+
+    if (!email || !pass) {
+        alert("Por favor, completa todos los campos.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Verificando...";
+
+    try {
+        // Usamos el objeto 'auth' que ya inicializaste arriba
+        await signInWithEmailAndPassword(auth, email, pass);
+        
+        document.getElementById('loginModal').style.display = 'none';
+        alert("¡Acceso concedido! Ya puedes enviar reportes.");
+    } catch (error) {
+        console.error("Error de acceso:", error.code);
+        alert("Error: Credenciales inválidas o problema de configuración.");
+        btn.disabled = false;
+        btn.innerText = "Entrar";
+    }
+};
+</script>
+</body>
+</html>
