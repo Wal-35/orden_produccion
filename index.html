@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>ILTEC — Reporte de Producción</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════ */
+:root {
+  --ink:       #0F172A;
+  --ink2:      #334155;
+  --ink3:      #64748B;
+  --surface:   #FFFFFF;
+  --bg:        #F1F5F9;
+  --border:    #E2E8F0;
+  --border2:   #CBD5E1;
+  --blue:      #1D4ED8;
+  --blue-l:    #EFF6FF;
+  --blue-m:    #BFDBFE;
+  --green:     #16A34A;
+  --green-l:   #F0FDF4;
+  --green-m:   #BBF7D0;
+  --amber:     #D97706;
+  --amber-l:   #FFFBEB;
+  --red:       #DC2626;
+  --red-l:     #FEF2F2;
+  --purple:    #7C3AED;
+  --purple-l:  #F5F3FF;
+  --teal:      #0D9488;
+  --teal-l:    #F0FDFA;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 16px 12px 40px;
+  -webkit-font-smoothing: antialiased;
+}
+.mi { font-family: 'Material Icons Round'; font-style: normal; line-height: 1; display: inline-flex; align-items: center; }
+
+/* ═══════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════ */
+.app { max-width: 620px; margin: 0 auto; }
+
+/* TOP HEADER */
+.app-header {
+  background: var(--ink);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-header img { height: 32px; background: white; padding: 3px 6px; border-radius: 6px; }
+.app-header-title { color: white; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+.app-header-sub   { color: #94A3B8; font-size: 11px; margin-top: 1px; }
+
+/* STEP INDICATOR */
+.steps-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.steps-bar::-webkit-scrollbar { display: none; }
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.step-circle {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  background: var(--border);
+  color: var(--ink3);
+  border: 2px solid var(--border2);
+  transition: all 0.2s;
+}
+.step-circle.active  { background: var(--blue); color: white; border-color: var(--blue); }
+.step-circle.done    { background: var(--green); color: white; border-color: var(--green); }
+.step-label { font-size: 10.5px; color: var(--ink3); font-weight: 500; white-space: nowrap; }
+.step-label.active { color: var(--blue); font-weight: 600; }
+.step-label.done   { color: var(--green); }
+.step-sep { width: 20px; height: 2px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+.step-sep.done { background: var(--green); }
+
+/* USER BAR */
+#user-bar {
+  display: none;
+  background: var(--green-l);
+  border-bottom: 1px solid var(--green-m);
+  padding: 8px 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+.user-info { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--green); font-weight: 500; }
+.user-info .mi { font-size: 16px; }
+.btn-logout {
+  font-size: 11px; font-weight: 600; color: var(--red);
+  background: white; border: 1px solid #FECACA;
+  border-radius: 6px; padding: 4px 10px; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-logout:hover { background: var(--red-l); }
+
+/* MAIN CARD */
+.card {
+  background: var(--surface);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* SECTION PAGES */
+.sec { display: none; padding: 20px 18px; }
+.sec.act { display: block; }
+
+/* SECTION TITLE */
+.sec-title {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 14px; margin-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+.sec-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.sec-title-text { font-size: 14px; font-weight: 700; color: var(--ink); }
+.sec-title-sub  { font-size: 11px; color: var(--ink3); margin-top: 1px; }
+
+/* INFO BANNER */
+.info-banner {
+  background: var(--blue-l);
+  border: 1px solid var(--blue-m);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #1E40AF;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.info-banner a { color: var(--blue); font-weight: 600; }
+
+/* FIELD GROUPS */
+.field-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.field-box-title {
+  font-size: 11px; font-weight: 700; color: var(--ink2);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.field-box-title .mi { font-size: 14px; }
+
+/* GRID LAYOUTS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+
+/* FORM FIELDS */
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+  font-size: 11px; font-weight: 600; color: var(--ink2);
+}
+input, select, textarea {
+  width: 100%; padding: 8px 10px;
+  border: 1.5px solid var(--border2);
+  border-radius: 8px;
+  font-size: 12.5px; font-family: inherit;
+  background: white; color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px #BFDBFE55;
+  outline: none;
+}
+textarea { resize: vertical; min-height: 60px; }
+select { cursor: pointer; }
+
+/* TABLE MATERIAL */
+.t-mat { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+.t-mat th {
+  background: var(--ink); color: white;
+  padding: 6px 8px; text-align: left;
+  font-size: 10.5px; font-weight: 600;
+}
+.t-mat td { border-bottom: 1px solid var(--border); padding: 0; }
+.t-mat tr:last-child td { border-bottom: none; }
+.t-mat input, .t-mat select {
+  border: none; padding: 6px 7px;
+  background: transparent; font-size: 11px;
+  border-radius: 0;
+}
+.t-mat tr:hover td { background: var(--bg); }
+
+/* PAROS ROW */
+.paro-row { display: grid; grid-template-columns: 2fr 1fr 1fr 72px; gap: 6px; align-items: center; margin-bottom: 6px; }
+.paro-time { font-size: 11px; font-weight: 700; color: var(--red); text-align: center; }
+
+/* CALIDAD CHECKS */
+.quality-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.quality-row:last-child { border-bottom: none; }
+.quality-label { font-size: 12px; color: var(--ink2); font-weight: 500; }
+.radio-group { display: flex; gap: 12px; }
+.radio-opt {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; cursor: pointer;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1.5px solid var(--border2);
+  transition: all 0.15s; user-select: none;
+}
+.radio-opt input { display: none; }
+.radio-opt.ok:has(input:checked)  { background: var(--green-l); border-color: var(--green); color: var(--green); }
+.radio-opt.nc:has(input:checked)  { background: var(--red-l);   border-color: var(--red);   color: var(--red);   }
+.radio-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border2); flex-shrink: 0;
+}
+.radio-opt.ok:has(input:checked) .radio-dot { background: var(--green); }
+.radio-opt.nc:has(input:checked) .radio-dot { background: var(--red); }
+
+/* TIEMPO DISPLAY */
+.time-display {
+  background: var(--amber-l);
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber);
+  text-align: right;
+  margin-top: 6px;
+}
+
+/* ACTION BUTTONS */
+.btn-action {
+  width: 100%; padding: 13px 18px;
+  border: none; border-radius: var(--radius);
+  font-weight: 700; font-size: 13px;
+  cursor: pointer; letter-spacing: 0.3px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-top: 16px;
+  color: white; transition: transform 0.1s, box-shadow 0.15s;
+  position: relative; overflow: hidden;
+}
+.btn-action:active { transform: scale(0.98); }
+.btn-action::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: white; opacity: 0;
+  transition: opacity 0.15s;
+}
+.btn-action:hover::after { opacity: 0.08; }
+.btn-action .mi { font-size: 18px; }
+.btn-blue   { background: linear-gradient(135deg, #1D4ED8, #2563EB); box-shadow: 0 2px 8px #1D4ED833; }
+.btn-teal   { background: linear-gradient(135deg, #0D9488, #0F766E); box-shadow: 0 2px 8px #0D948833; }
+.btn-purple { background: linear-gradient(135deg, #7C3AED, #6D28D9); box-shadow: 0 2px 8px #7C3AED33; }
+.btn-amber  { background: linear-gradient(135deg, #D97706, #B45309); box-shadow: 0 2px 8px #D9770633; }
+.btn-green  { background: linear-gradient(135deg, #16A34A, #15803D); box-shadow: 0 2px 8px #16A34A33; }
+
+/* ═══════════════════════════════════════
+   LOGIN OVERLAY
+═══════════════════════════════════════ */
+#login-overlay {
+  background: linear-gradient(150deg, #0F172A 0%, #1E3A5F 60%, #0D9488 100%);
+  padding: 36px 20px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 380px;
+}
+.login-logo {
+  background: white; padding: 8px 16px;
+  border-radius: 10px; margin-bottom: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.login-logo img { height: 38px; display: block; }
+.login-badge {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #94A3B8;
+  font-size: 11px; font-weight: 600;
+  padding: 4px 14px; border-radius: 20px;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.login-card {
+  background: white; border-radius: var(--radius-lg);
+  padding: 22px 20px; width: 100%; max-width: 320px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.login-card h3 {
+  font-size: 15px; font-weight: 700; color: var(--ink);
+  margin-bottom: 16px; text-align: center;
+}
+.pass-wrap { position: relative; }
+.pass-wrap input { padding-right: 40px; }
+.ojo {
+  position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; color: var(--ink3);
+  font-size: 16px; padding: 0; line-height: 1;
+  display: flex; align-items: center;
+}
+.ojo:hover { color: var(--ink); }
+.remember-row {
+  display: flex; align-items: center; gap: 7px;
+  margin: 10px 0 14px;
+  font-size: 11.5px; color: var(--ink2);
+  cursor: pointer;
+}
+.remember-row input { width: 14px; height: 14px; cursor: pointer; accent-color: var(--blue); flex-shrink: 0; }
+#btn-login {
+  width: 100%; padding: 11px;
+  background: linear-gradient(135deg, var(--ink), #334155);
+  color: white; border: none; border-radius: 8px;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  transition: opacity 0.15s; letter-spacing: 0.5px;
+}
+#btn-login:hover { opacity: 0.9; }
+#btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+#login-error {
+  font-size: 11.5px; color: var(--red);
+  text-align: center; margin-top: 10px; min-height: 18px;
+}
+
+/* ═══════════════════════════════════════
+   TOAST NOTIFICATION
+═══════════════════════════════════════ */
+.toast {
+  display: none; position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink); color: white;
+  padding: 11px 22px; border-radius: 24px;
+  font-size: 13px; font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  white-space: nowrap;
+}
+.toast.success { background: linear-gradient(135deg, #16A34A, #15803D); }
+.toast.error   { background: linear-gradient(135deg, #DC2626, #B91C1C); }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 400px) {
+  .g3 { grid-template-columns: 1fr 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .paro-row { grid-template-columns: 1.5fr 1fr 1fr 60px; }
+}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <img src="https://wal-35.github.io/orden_produccion/logoiltec.png" alt="ILTEC">
+    <div>
+      <div class="app-header-title">ILTEC S.A.S.</div>
+      <div class="app-header-sub">Sistema de Reporte de Producción</div>
+    </div>
+  </header>
+
+  <!-- STEP INDICATOR -->
+  <nav class="steps-bar" id="steps-nav">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1">1</div>
+      <span class="step-label active">Programador</span>
+    </div>
+    <div class="step-sep" id="ss1"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2">2</div>
+      <span class="step-label">Alistamiento</span>
+    </div>
+    <div class="step-sep" id="ss2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3">3</div>
+      <span class="step-label">Punzonado</span>
+    </div>
+    <div class="step-sep" id="ss3"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc4">4</div>
+      <span class="step-label">Plegado</span>
+    </div>
+  </nav>
+
+  <!-- USER BAR -->
+  <div id="user-bar">
+    <div class="user-info">
+      <span class="mi">verified_user</span>
+      <span id="user-email">—</span>
+    </div>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+
+  <!-- MAIN CARD -->
+  <div class="card">
+
+    <!-- ══════════════════════════════
+         SECCIÓN 1 — PROGRAMADOR
+    ══════════════════════════════ -->
+    <div class="sec act" id="p1">
+
+      <!-- LOGIN OVERLAY -->
+      <div id="login-overlay">
+        <div class="login-logo">
+          <img src="https://wal-35.github.io/orden_produccion/logoiltec.png" alt="ILTEC">
+        </div>
+        <div class="login-badge">Acceso restringido</div>
+        <div class="login-card">
+          <h3>🔐 Área del Programador</h3>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Correo electrónico</label>
+            <input type="email" id="login-email" placeholder="programador@iltec.com" autocomplete="username">
+          </div>
+          <div class="field" style="margin-bottom:4px;">
+            <label>Contraseña</label>
+            <div class="pass-wrap">
+              <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+              <button class="ojo mi" id="toggle-pass" type="button">visibility_off</button>
+            </div>
+          </div>
+          <label class="remember-row">
+            <input type="checkbox" id="remember-me" checked>
+            Recordar sesión en este dispositivo
+          </label>
+          <button id="btn-login" onclick="iniciarSesion()">Ingresar</button>
+          <div id="login-error"></div>
+        </div>
+      </div>
+
+      <!-- FORMULARIO PROGRAMADOR -->
+      <div id="form-prog" style="display:none;">
+        <div class="sec-title">
+          <div class="sec-icon" style="background:var(--blue-l);">
+            <span class="mi" style="color:var(--blue);">edit_note</span>
+          </div>
+          <div>
+            <div class="sec-title-text">Datos de la Orden</div>
+            <div class="sec-title-sub">Complete los datos de la pieza a producir</div>
+          </div>
+        </div>
+
+        <div class="field-box">
+          <div class="field-box-title">
+            <span class="mi" style="color:var(--blue);">info</span>
+            Identificación de la pieza
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Ítem de la Pieza</label>
+            <input type="text" id="i_i" placeholder="Ej: 10811D">
+          </div>
+          <div class="field">
+            <label>Plano (Link GitHub)</label>
+            <input type="url" id="i_p" placeholder="https://wal-35.github.io/planos/10811D.pdf">
+          </div>
+        </div>
+
+        <div class="field-box">
+          <div class="field-box-title">
+            <span class="mi" style="color:var(--teal);">category</span>
+            Especificaciones de material
+          </div>
+          <div class="g3">
+            <div class="field">
+              <label>Cantidad</label>
+              <input type="number" id="i_c" placeholder="0">
+            </div>
+            <div class="field">
+              <label>Tipo Material</label>
+              <select id="i_m">
+                <option value="CR (Cold Rolled)">CR — Cold Rolled</option>
+                <option value="HR (Hot Rolled)">HR — Hot Rolled</option>
+                <option value="GALV (Galvanizado)">GALV — Galvanizado</option>
+                <option value="ALUM (Aluminio)">ALUM — Aluminio</option>
+                <option value="INOX (Acero Inoxidable)">INOX — Inoxidable</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Calibre</label>
+              <select id="i_ca">
+                <option>12</option><option>14</option><option>16</option>
+                <option>18</option><option>20</option><option>22</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-action btn-blue" onclick="envP1()">
+          <span class="mi">send</span> Enviar a Alistamiento
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         SECCIÓN 2 — ALISTAMIENTO
+    ══════════════════════════════ -->
+    <div class="sec" id="p2">
+      <div class="sec-title">
+        <div class="sec-icon" style="background:var(--teal-l);">
+          <span class="mi" style="color:var(--teal);">handyman</span>
+        </div>
+        <div>
+          <div class="sec-title-text">Área: Alistamiento</div>
+          <div class="sec-title-sub">Preparación de herramienta y material</div>
+        </div>
+      </div>
+
+      <div id="inf2" class="info-banner"></div>
+
+      <div class="field-box">
+        <div class="field" style="margin-bottom:10px;">
+          <label>Alistador responsable</label>
+          <select id="al_op">
+            <option value="">Seleccione...</option>
+            <option>Alistador 1</option>
+            <option>Alistador 2</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Observaciones de alistamiento</label>
+          <textarea id="al_o" rows="3" placeholder="Novedades de herramienta, ajustes realizados..."></textarea>
+        </div>
+      </div>
+
+      <button class="btn-action btn-teal" onclick="envP2()">
+        <span class="mi">arrow_forward</span> Enviar a Punzonado / Láser
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════
+         SECCIÓN 3 — PUNZONADO/LÁSER
+    ══════════════════════════════ -->
+    <div class="sec" id="p3">
+      <div class="sec-title">
+        <div class="sec-icon" style="background:var(--purple-l);">
+          <span class="mi" style="color:var(--purple);">precision_manufacturing</span>
+        </div>
+        <div>
+          <div class="sec-title-text">Área: Punzonado / Láser</div>
+          <div class="sec-title-sub">Registro del proceso de corte</div>
+        </div>
+      </div>
+
+      <div id="inf3" class="info-banner"></div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--purple);">group</span> Operarios y máquina</div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="field">
+            <label>Operario 1</label>
+            <select id="pu_op1" class="s-op"></select>
+          </div>
+          <div class="field">
+            <label>Operario 2</label>
+            <select id="pu_op2" class="s-op"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Máquina Asignada</label>
+          <select id="pu_mq">
+            <option value="">Seleccione Máquina...</option>
+            <option>Punzonadora 1</option>
+            <option>Punzonadora 2</option>
+            <option>Máquina Láser</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--amber);">schedule</span> Registro de tiempos</div>
+        <div class="g4">
+          <div class="field">
+            <label>F. Inicio</label>
+            <input type="date" id="pu_di">
+          </div>
+          <div class="field">
+            <label>H. Inicio</label>
+            <input type="time" id="pu_ti" onchange="calT('pu_ti','pu_tf','pu_tot')">
+          </div>
+          <div class="field">
+            <label>F. Final</label>
+            <input type="date" id="pu_df">
+          </div>
+          <div class="field">
+            <label>H. Final</label>
+            <input type="time" id="pu_tf" onchange="calT('pu_ti','pu_tf','pu_tot')">
+          </div>
+        </div>
+        <div id="pu_tot" class="time-display">⏱ Tiempo de trabajo: — </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--red);">report_problem</span> Registro de paros</div>
+        <div class="paro-row" style="margin-bottom:4px;">
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);">Código Paro</span>
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);">H. Inicio</span>
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);">H. Final</span>
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);text-align:center;">Tiempo</span>
+        </div>
+        <div class="paro-row">
+          <select id="pu_p1_c" class="s-mo"></select>
+          <input type="time" id="pu_p1_i" onchange="calT('pu_p1_i','pu_p1_f','pu_p1_t')">
+          <input type="time" id="pu_p1_f" onchange="calT('pu_p1_i','pu_p1_f','pu_p1_t')">
+          <div id="pu_p1_t" class="paro-time">—</div>
+        </div>
+        <div class="paro-row">
+          <select id="pu_p2_c" class="s-mo"></select>
+          <input type="time" id="pu_p2_i" onchange="calT('pu_p2_i','pu_p2_f','pu_p2_t')">
+          <input type="time" id="pu_p2_f" onchange="calT('pu_p2_i','pu_p2_f','pu_p2_t')">
+          <div id="pu_p2_t" class="paro-time">—</div>
+        </div>
+      </div>
+
+      <div class="field-box" style="border-color:var(--blue-m); background:var(--blue-l);">
+        <div class="field-box-title" style="color:var(--blue);">
+          <span class="mi">table_chart</span> Material y Calibre (Retal / Lámina)
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="t-mat"><thead id="th_pu"></thead><tbody id="f_pu"></tbody></table>
+        </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--green);">fact_check</span> Producción y defectos</div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="field">
+            <label>Producto Conforme</label>
+            <input type="number" id="pu_c" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Producto NO Conforme</label>
+            <input type="number" id="pu_nc" placeholder="0">
+          </div>
+        </div>
+        <div class="g3">
+          <div class="field">
+            <label>Tipo de Defecto</label>
+            <select id="pu_dt" class="s-def-t"></select>
+          </div>
+          <div class="field">
+            <label>Causa</label>
+            <select id="pu_dc" class="s-def-c"></select>
+          </div>
+          <div class="field">
+            <label>Acción</label>
+            <select id="pu_da" class="s-def-a"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--teal);">verified</span> Inspección de Calidad</div>
+        <div class="quality-row">
+          <span class="quality-label">Medidas</span>
+          <div class="radio-group">
+            <label class="radio-opt ok"><input type="radio" name="pu_qm" value="CUMPLE"><span class="radio-dot"></span>Cumple</label>
+            <label class="radio-opt nc"><input type="radio" name="pu_qm" value="NO CUMPLE"><span class="radio-dot"></span>No cumple</label>
+          </div>
+        </div>
+        <div class="quality-row">
+          <span class="quality-label">Material</span>
+          <div class="radio-group">
+            <label class="radio-opt ok"><input type="radio" name="pu_qmt" value="CUMPLE"><span class="radio-dot"></span>Cumple</label>
+            <label class="radio-opt nc"><input type="radio" name="pu_qmt" value="NO CUMPLE"><span class="radio-dot"></span>No cumple</label>
+          </div>
+        </div>
+        <div class="quality-row">
+          <span class="quality-label">Calibre</span>
+          <div class="radio-group">
+            <label class="radio-opt ok"><input type="radio" name="pu_qc" value="CUMPLE"><span class="radio-dot"></span>Cumple</label>
+            <label class="radio-opt nc"><input type="radio" name="pu_qc" value="NO CUMPLE"><span class="radio-dot"></span>No cumple</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Observaciones generales</label>
+        <textarea id="pu_o" rows="2" placeholder="Comentarios adicionales del proceso..."></textarea>
+      </div>
+
+      <button class="btn-action btn-purple" onclick="envP3()">
+        <span class="mi">arrow_forward</span> Enviar a Plegado
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════
+         SECCIÓN 4 — PLEGADO
+    ══════════════════════════════ -->
+    <div class="sec" id="p4">
+      <div class="sec-title">
+        <div class="sec-icon" style="background:var(--amber-l);">
+          <span class="mi" style="color:var(--amber);">compress</span>
+        </div>
+        <div>
+          <div class="sec-title-text">Área: Plegado</div>
+          <div class="sec-title-sub">Registro del proceso de doblez</div>
+        </div>
+      </div>
+
+      <div id="inf4" class="info-banner"></div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--amber);">group</span> Operarios y máquina</div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="field">
+            <label>Operario 1</label>
+            <select id="pl_op1" class="s-op"></select>
+          </div>
+          <div class="field">
+            <label>Operario 2</label>
+            <select id="pl_op2" class="s-op"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Máquina Asignada</label>
+          <select id="pl_mq">
+            <option value="">Seleccione Máquina...</option>
+            <option>Plegadora 1</option>
+            <option>Plegadora 2</option>
+            <option>Plegadora 3</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--amber);">schedule</span> Registro de tiempos</div>
+        <div class="g4">
+          <div class="field">
+            <label>F. Inicio</label>
+            <input type="date" id="pl_di">
+          </div>
+          <div class="field">
+            <label>H. Inicio</label>
+            <input type="time" id="pl_ti" onchange="calT('pl_ti','pl_tf','pl_tot')">
+          </div>
+          <div class="field">
+            <label>F. Final</label>
+            <input type="date" id="pl_df">
+          </div>
+          <div class="field">
+            <label>H. Final</label>
+            <input type="time" id="pl_tf" onchange="calT('pl_ti','pl_tf','pl_tot')">
+          </div>
+        </div>
+        <div id="pl_tot" class="time-display">⏱ Tiempo de trabajo: — </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--red);">report_problem</span> Registro de paros</div>
+        <div class="paro-row" style="margin-bottom:4px;">
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);">Código Paro</span>
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);">H. Inicio</span>
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);">H. Final</span>
+          <span style="font-size:10px;font-weight:600;color:var(--ink3);text-align:center;">Tiempo</span>
+        </div>
+        <div class="paro-row">
+          <select id="pl_p1_c" class="s-mo"></select>
+          <input type="time" id="pl_p1_i" onchange="calT('pl_p1_i','pl_p1_f','pl_p1_t')">
+          <input type="time" id="pl_p1_f" onchange="calT('pl_p1_i','pl_p1_f','pl_p1_t')">
+          <div id="pl_p1_t" class="paro-time">—</div>
+        </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--green);">fact_check</span> Producción y defectos</div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="field">
+            <label>Producto Conforme</label>
+            <input type="number" id="pl_c" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Producto NO Conforme</label>
+            <input type="number" id="pl_nc" placeholder="0">
+          </div>
+        </div>
+        <div class="g3">
+          <div class="field">
+            <label>Tipo de Defecto</label>
+            <select id="pl_dt" class="s-def-t"></select>
+          </div>
+          <div class="field">
+            <label>Causa</label>
+            <select id="pl_dc" class="s-def-c"></select>
+          </div>
+          <div class="field">
+            <label>Acción</label>
+            <select id="pl_da" class="s-def-a"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-box">
+        <div class="field-box-title"><span class="mi" style="color:var(--teal);">verified</span> Inspección de Calidad</div>
+        <div class="quality-row">
+          <span class="quality-label">Medidas</span>
+          <div class="radio-group">
+            <label class="radio-opt ok"><input type="radio" name="pl_qm" value="CUMPLE"><span class="radio-dot"></span>Cumple</label>
+            <label class="radio-opt nc"><input type="radio" name="pl_qm" value="NO CUMPLE"><span class="radio-dot"></span>No cumple</label>
+          </div>
+        </div>
+        <div class="quality-row">
+          <span class="quality-label">Material</span>
+          <div class="radio-group">
+            <label class="radio-opt ok"><input type="radio" name="pl_qmt" value="CUMPLE"><span class="radio-dot"></span>Cumple</label>
+            <label class="radio-opt nc"><input type="radio" name="pl_qmt" value="NO CUMPLE"><span class="radio-dot"></span>No cumple</label>
+          </div>
+        </div>
+        <div class="quality-row">
+          <span class="quality-label">Calibre</span>
+          <div class="radio-group">
+            <label class="radio-opt ok"><input type="radio" name="pl_qc" value="CUMPLE"><span class="radio-dot"></span>Cumple</label>
+            <label class="radio-opt nc"><input type="radio" name="pl_qc" value="NO CUMPLE"><span class="radio-dot"></span>No cumple</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>Observaciones Plegado</label>
+        <textarea id="pl_o" rows="2" placeholder="Comentarios finales del proceso..."></textarea>
+      </div>
+
+      <button class="btn-action btn-green" onclick="envP4()">
+        <span class="mi">task_alt</span> Finalizar Reporte y Enviar
+      </button>
+    </div>
+
+  </div><!-- .card -->
+</div><!-- .app -->
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const baseUrl = "https://wal-35.github.io/orden_produccion/index.html";
+window.firebaseReady = false;
+
+// ── Listas desplegables ──
+const opcMotivos = `<option value="">Cód...</option><option>01 - Falla Eléctrica</option><option>02 - Falla Mecánica</option><option>03 - Falta Material</option><option>04 - Ajuste Máquina</option><option>05 - Cambio Herramienta</option><option>06 - Limpieza</option><option>07 - Reunión/Capacitación</option><option>08 - Pausa Activa/Baño</option>`;
+const opcLam    = `<option value="">Tipo...</option><option>Lámina</option><option>Retal</option>`;
+const opcOps    = `<option value="">Seleccione...</option><option value="Ninguno">Ninguno</option><option>Juan Paz</option><option>Carlos Gomez</option><option>Andres Ruiz</option><option>Pedro Lopez</option>`;
+const defTipos  = `<option value="">Tipo Defecto...</option><option>Rebabas</option><option>Rayas/Golpes</option><option>Medida fuera de tolerancia</option><option>Deformación</option><option>Falta de perforación</option><option>Ángulo incorrecto</option>`;
+const defCausas = `<option value="">Causa...</option><option>Herramienta desgastada</option><option>Error de programación</option><option>Mal posicionamiento</option><option>Material defectuoso</option><option>Falla de máquina</option><option>Ajuste de galga</option>`;
+const defAcciones=`<option value="">Acción...</option><option>Ajustar herramienta</option><option>Reprogramar pieza</option><option>Capacitar operario</option><option>Mantenimiento preventivo</option><option>Corregir tope</option><option>Cambiar material</option>`;
+
+// ── Utilidades ──
+function calT(idIni, idFin, idRes) {
+  let ti = document.getElementById(idIni).value;
+  let tf = document.getElementById(idFin).value;
+  let el = document.getElementById(idRes);
+  if (ti && tf) {
+    let [h1,m1] = ti.split(':').map(Number);
+    let [h2,m2] = tf.split(':').map(Number);
+    let d = (new Date(0,0,0,h2,m2)) - (new Date(0,0,0,h1,m1));
+    if (d < 0) d += 86400000;
+    let hh = Math.floor(d/3600000);
+    let mm = Math.floor((d%3600000)/60000);
+    el.textContent = `⏱ Tiempo: ${hh}h ${mm}m`;
+    return `${hh}h ${mm}m`;
+  }
+  el.textContent = '⏱ Tiempo de trabajo: — ';
+  return '0h 0m';
+}
+
+function getRadioVal(name) {
+  for (let r of document.getElementsByName(name)) if (r.checked) return r.value;
+  return 'N/A';
+}
+
+function toast(msg, type = '') {
+  let t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ── Indicador de pasos ──
+function updateSteps(active) {
+  for (let i = 1; i <= 4; i++) {
+    let sc = document.getElementById('sc'+i);
+    let labels = document.querySelectorAll('.step-label');
+    sc.className = 'step-circle' + (i < active ? ' done' : i === active ? ' active' : '');
+    labels[i-1].className = 'step-label' + (i < active ? ' done' : i === active ? ' active' : '');
+    if (i < 4) {
+      let ss = document.getElementById('ss'+i);
+      if (ss) ss.className = 'step-sep' + (i < active ? ' done' : '');
+    }
+  }
+}
+
+// ── Toggle contraseña ──
+document.getElementById('toggle-pass').addEventListener('click', function() {
+  let inp = document.getElementById('login-pass');
+  if (inp.type === 'password') { inp.type = 'text'; this.textContent = 'visibility'; }
+  else { inp.type = 'password'; this.textContent = 'visibility_off'; }
+});
+
+['login-email','login-pass'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') iniciarSesion(); })
+);
+
+function mostrarFormProg(email) {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('form-prog').style.display = 'block';
+  document.getElementById('user-bar').style.display = 'flex';
+  document.getElementById('user-email').textContent = email;
+}
+
+function cerrarSesion() {
+  window.firebaseAuth.signOut(window.authInstance).then(() => {
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('form-prog').style.display = 'none';
+    document.getElementById('user-bar').style.display = 'none';
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-error').textContent = '';
+  });
+}
+
+function iniciarSesion() {
+  const email   = document.getElementById('login-email').value.trim();
+  const pass    = document.getElementById('login-pass').value;
+  const recuerda= document.getElementById('remember-me').checked;
+  const errEl   = document.getElementById('login-error');
+  const btnL    = document.getElementById('btn-login');
+
+  if (!email || !pass) { errEl.textContent = '⚠️ Ingresa tu correo y contraseña.'; return; }
+  if (!window.firebaseReady) {
+    errEl.textContent = '⏳ Cargando sistema, intenta de nuevo en 2 segundos...';
+    btnL.disabled = true;
+    setTimeout(() => { btnL.disabled = false; errEl.textContent = ''; }, 2000);
+    return;
+  }
+  errEl.textContent = ''; btnL.disabled = true; btnL.textContent = 'Verificando...';
+
+  const auth = window.authInstance;
+  const pers = recuerda ? window.firebaseAuth.browserLocalPersistence : window.firebaseAuth.browserSessionPersistence;
+
+  window.firebaseAuth.setPersistence(auth, pers)
+    .then(() => window.firebaseAuth.signInWithEmailAndPassword(auth, email, pass))
+    .then(cred => { mostrarFormProg(cred.user.email); })
+    .catch(err => {
+      const m = {
+        'auth/user-not-found':'❌ Usuario no encontrado.',
+        'auth/wrong-password':'❌ Contraseña incorrecta.',
+        'auth/invalid-email':'❌ Correo no válido.',
+        'auth/too-many-requests':'⏳ Demasiados intentos. Espera.',
+        'auth/invalid-credential':'❌ Correo o contraseña incorrectos.',
+        'auth/network-request-failed':'❌ Sin conexión. Verifica el WiFi.'
+      };
+      errEl.textContent = m[err.code] || `❌ ${err.message}`;
+    })
+    .finally(() => { btnL.disabled = false; btnL.textContent = 'Ingresar'; });
+}
+
+// ── window.onload ──
+window.onload = () => {
+  // Tabla materiales punzonado
+  const tbPu = document.getElementById('f_pu');
+  if (tbPu) {
+    document.getElementById('th_pu').innerHTML =
+      `<tr><th>Lám/Ret</th><th>Medidas</th><th>Cant.Sobra</th><th>Med.Sobra</th><th>Pzs/Lám</th></tr>`;
+    for (let i = 1; i <= 6; i++) {
+      tbPu.innerHTML += `<tr>
+        <td><select id="pu_lr${i}">${opcLam}</select></td>
+        <td><input type="text" id="pu_md${i}" placeholder="ej: 1200x600"></td>
+        <td><input type="number" id="pu_cs${i}" placeholder="0"></td>
+        <td><input type="text" id="pu_ms${i}" placeholder="medidas"></td>
+        <td><input type="number" id="pu_pz${i}" placeholder="0"></td>
+      </tr>`;
+    }
+  }
+  document.querySelectorAll('.s-mo').forEach(s => s.innerHTML = opcMotivos);
+  document.querySelectorAll('.s-op').forEach(s => s.innerHTML = opcOps);
+  document.querySelectorAll('.s-def-t').forEach(s => s.innerHTML = defTipos);
+  document.querySelectorAll('.s-def-c').forEach(s => s.innerHTML = defCausas);
+  document.querySelectorAll('.s-def-a').forEach(s => s.innerHTML = defAcciones);
+
+  let st = urlParams.get('s') || '1';
+  if (st !== '1') {
+    document.querySelectorAll('.sec').forEach(d => d.classList.remove('act'));
+    document.getElementById('p'+st).classList.add('act');
+    updateSteps(parseInt(st));
+
+    let pn = urlParams.get('p');
+    let pv = `https://docs.google.com/viewer?url=${encodeURIComponent(pn)}&embedded=true`;
+    let ib = `<strong>Ítem:</strong> ${urlParams.get('i')} &nbsp;|&nbsp; <strong>Cant:</strong> ${urlParams.get('c')} &nbsp;|&nbsp; <strong>Mat:</strong> ${urlParams.get('m')} Cal.${urlParams.get('ca')}<br><a href="${pv}" target="_blank">📄 Ver Plano (Online)</a>`;
+    let el = document.getElementById('inf'+st);
+    if (el) el.innerHTML = ib;
+  } else {
+    updateSteps(1);
+  }
+};
+
+// ── PROGRAMADOR ──
+function envP1() {
+  const i = document.getElementById('i_i').value;
+  const c = document.getElementById('i_c').value;
+  const p = document.getElementById('i_p').value;
+  const m = document.getElementById('i_m').value;
+  const ca= document.getElementById('i_ca').value;
+  if (!i || !p) return alert('Falta el Ítem o el link del Plano');
+  let link = `${baseUrl}?s=2&i=${encodeURIComponent(i)}&c=${c}&p=${encodeURIComponent(p)}&m=${encodeURIComponent(m)}&ca=${ca}`;
+  window.open(`https://wa.me/573182150158?text=${encodeURIComponent(`📋 *NUEVA ORDEN DE PRODUCCIÓN*\n*Ítem:* ${i}\n*Cant:* ${c}\n*Mat:* ${m} Cal ${ca}\n\n👉 *Joven Alistador, abre aquí:*\n${link}`)}`);
+}
+
+// ── ALISTADOR ──
+function envP2() {
+  let params = new URLSearchParams(window.location.search);
+  params.set('s','3');
+  params.set('al_op', document.getElementById('al_op').value || 'No Asignado');
+  params.set('al_o',  document.getElementById('al_o').value  || 'Sin observaciones');
+  let link = `${baseUrl}?${params.toString()}`;
+  let msg  = `🔧 *HERRAMIENTA ALISTADA*\n*Ítem:* ${params.get('i')} | *Cant:* ${params.get('c')}\n*Alistó:* ${params.get('al_op')}\n*Obs:* ${params.get('al_o')}\n\n👉 *Operador de Máquina, abre aquí:*\n${link}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+}
+
+// ── PUNZONADOR ──
+function envP3() {
+  let params = new URLSearchParams(window.location.search);
+  params.set('s','4');
+  let op1 = document.getElementById('pu_op1').value || 'N/A';
+  let op2 = document.getElementById('pu_op2').value || 'Ninguno';
+  params.set('pu_op', op2 !== 'Ninguno' ? `${op1} y ${op2}` : op1);
+  params.set('pu_mq', document.getElementById('pu_mq').value || 'N/A');
+  params.set('pu_tt', `${document.getElementById('pu_ti').value} a ${document.getElementById('pu_tf').value} = ${document.getElementById('pu_tot').textContent}`);
+  params.set('pu_c',  document.getElementById('pu_c').value  || '0');
+  params.set('pu_nc', document.getElementById('pu_nc').value || '0');
+  params.set('pu_o',  document.getElementById('pu_o').value  || 'Sin obs');
+  let p_paros = [];
+  for (let j = 1; j <= 2; j++) {
+    let cp = document.getElementById(`pu_p${j}_c`).value;
+    if (cp) p_paros.push(`${cp} (${document.getElementById(`pu_p${j}_t`).textContent})`);
+  }
+  params.set('pu_par', p_paros.join(' | ') || 'Ninguno');
+  let pu_mtb = [];
+  for (let k = 1; k <= 6; k++) {
+    let lr = document.getElementById(`pu_lr${k}`).value;
+    let md = document.getElementById(`pu_md${k}`).value;
+    if (md) pu_mtb.push(`${lr}|${md}|${document.getElementById(`pu_cs${k}`).value}|${document.getElementById(`pu_ms${k}`).value}|${document.getElementById(`pu_pz${k}`).value}`);
+  }
+  params.set('pu_mtb', pu_mtb.join('~'));
+  params.set('pu_def', document.getElementById('pu_dt').value
+    ? `Tipo: ${document.getElementById('pu_dt').value} | Causa: ${document.getElementById('pu_dc').value} | Accion: ${document.getElementById('pu_da').value}`
+    : 'Ninguno');
+  params.set('pu_q', `Med:${getRadioVal('pu_qm')}|Mat:${getRadioVal('pu_qmt')}|Cal:${getRadioVal('pu_qc')}`);
+  let link = `${baseUrl}?${params.toString()}`;
+  let msg  = `✅ *PUNZONADO TERMINADO*\n*Ítem:* ${params.get('i')} | *Cant:* ${params.get('c')}\n*Material:* ${params.get('m')} | *Cal:* ${params.get('ca')}\n\n👉 *Operador Plegado, abre aquí:*\n${link}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+}
+
+// ── PLEGADOR / GUARDAR EN FIRESTORE ──
+function envP4() {
+  const p  = new URLSearchParams(window.location.search);
+  let i  = p.get('i')  || 'N/A';
+  let c  = p.get('c')  || '0';
+  let m  = p.get('m')  || 'N/A';
+  let ca = p.get('ca') || 'N/A';
+
+  let op1_pl = document.getElementById('pl_op1').value || 'N/A';
+  let op2_pl = document.getElementById('pl_op2').value || 'Ninguno';
+  let pl_op  = op2_pl !== 'Ninguno' ? `${op1_pl} y ${op2_pl}` : op1_pl;
+  let pl_tt  = `${document.getElementById('pl_ti').value} a ${document.getElementById('pl_tf').value} = ${document.getElementById('pl_tot').textContent}`;
+  let pl_def_val = document.getElementById('pl_dt').value;
+  let pl_def_txt = pl_def_val
+    ? `Tipo: ${pl_def_val} | Causa: ${document.getElementById('pl_dc').value} | Acción: ${document.getElementById('pl_da').value}`
+    : 'Ninguno';
+
+  let matT = '';
+  if (p.get('pu_mtb')) {
+    matT = '\n📋 *CONSUMO DE MATERIAL:*\n';
+    p.get('pu_mtb').split('~').forEach(r => {
+      let [lr,md,cs,ms,pz] = r.split('|');
+      matT += `- ${lr} | Med: ${md} | Sobra: ${cs} (${ms}) | Pzs: ${pz}\n`;
+    });
+  }
+
+  const txt = `📊 *REPORTE FINAL DE PRODUCCIÓN*
+*Ítem:* ${i} | *Cant:* ${c}
+*Material:* ${m} | *Cal:* ${ca}
+➖➖➖➖➖➖➖➖➖➖
+⚙️ *ALISTAMIENTO*
+👤 *Por:* ${p.get('al_op')} | *Obs:* ${p.get('al_o')}
+
+🔨 *PUNZONADO / LÁSER*
+👤 *Op:* ${p.get('pu_op')}
+⏱️ *T:* ${p.get('pu_tt')} | 🛑 *Paros:* ${p.get('pu_par')}
+${matT}
+✅ *Conf:* ${p.get('pu_c')} | ❌ *No Conf:* ${p.get('pu_nc')}
+⚠️ *Defectos:* ${p.get('pu_def')}
+🔍 *Calidad:* ${p.get('pu_q')}
+📝 *Obs:* ${p.get('pu_o')}
+
+📐 *PLEGADO*
+👤 *Op:* ${pl_op} | 🏭 *Máq:* ${document.getElementById('pl_mq').value}
+⏱️ *T:* ${pl_tt}
+✅ *Conf:* ${document.getElementById('pl_c').value||'0'} | ❌ *No Conf:* ${document.getElementById('pl_nc').value||'0'}
+⚠️ *Defectos:* ${pl_def_txt}
+🔍 *Calidad:* Med:${getRadioVal('pl_qm')}|Mat:${getRadioVal('pl_qmt')}|Cal:${getRadioVal('pl_qc')}
+📝 *Obs:* ${document.getElementById('pl_o').value||'Sin obs'}
+
+🏁 *REPORTE COMPLETADO*`;
+
+  const materialConsumido = [];
+  if (p.get('pu_mtb')) {
+    p.get('pu_mtb').split('~').forEach(r => {
+      let [tipo,medidas,cant_sobra,med_sobra,pzas_lamina] = r.split('|');
+      materialConsumido.push({ tipo, medidas, cant_sobra, med_sobra, pzas_lamina });
+    });
+  }
+
+  const datosBD = {
+    "A_item":           i,
+    "B_cantidad":       parseInt(c) || 0,
+    "C_material":       m,
+    "D_calibre":        ca,
+    "E_fecha_registro": new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
+    "F_alist_operario":      p.get('al_op') || 'N/A',
+    "G_alist_observaciones": p.get('al_o')  || 'Sin obs',
+    "H_pun_operarios":     p.get('pu_op')  || 'N/A',
+    "I_pun_maquina":       p.get('pu_mq')  || 'N/A',
+    "J_pun_tiempo":        p.get('pu_tt')  || 'N/A',
+    "K_pun_paros":         p.get('pu_par') || 'Ninguno',
+    "L_pun_mat_consumido": materialConsumido,
+    "M_pun_conforme":      parseInt(p.get('pu_c'))  || 0,
+    "N_pun_no_conforme":   parseInt(p.get('pu_nc')) || 0,
+    "O_pun_defectos":      p.get('pu_def') || 'Ninguno',
+    "P_pun_calidad":       p.get('pu_q')   || 'N/A',
+    "Q_pun_observaciones": p.get('pu_o')   || 'Sin obs',
+    "R_pleg_operarios":     pl_op,
+    "S_pleg_maquina":       document.getElementById('pl_mq').value || 'N/A',
+    "T_pleg_tiempo":        pl_tt,
+    "U_pleg_conforme":      parseInt(document.getElementById('pl_c').value)  || 0,
+    "V_pleg_no_conforme":   parseInt(document.getElementById('pl_nc').value) || 0,
+    "W_pleg_defectos":      pl_def_txt,
+    "X_pleg_calidad":       `Medidas:${getRadioVal('pl_qm')} | Material:${getRadioVal('pl_qmt')} | Calibre:${getRadioVal('pl_qc')}`,
+    "Y_pleg_observaciones": document.getElementById('pl_o').value || 'Sin obs'
+  };
+
+  // Texto tabla para analista
+  const encabCSV =
+    'Fecha\tItem\tCantidad\tMaterial\tCalibre\t'+
+    'Alist.Operario\tAlist.Obs\t'+
+    'Pun.Operarios\tPun.Maquina\tPun.Tiempo\tPun.Paros\tPun.Material\t'+
+    'Pun.Conforme\tPun.NoConf\tPun.Defectos\tPun.Calidad\tPun.Obs\t'+
+    'Pleg.Operarios\tPleg.Maquina\tPleg.Tiempo\t'+
+    'Pleg.Conforme\tPleg.NoConf\tPleg.Defectos\tPleg.Calidad\tPleg.Obs';
+  let matResWA = '';
+  if (p.get('pu_mtb')) {
+    p.get('pu_mtb').split('~').forEach(r => {
+      let [lr,md,,, pz] = r.split('|');
+      if (md) matResWA += `${lr} Med:${md} Pzs:${pz} / `;
+    });
+    matResWA = matResWA.replace(/ \/ $/, '');
+  }
+  const filaCSV = [
+    new Date().toLocaleString('es-CO',{timeZone:'America/Bogota'}),
+    i,c,m,ca,
+    p.get('al_op')||'N/A', p.get('al_o')||'Sin obs',
+    p.get('pu_op')||'N/A', p.get('pu_mq')||'N/A',
+    p.get('pu_tt')||'N/A', p.get('pu_par')||'Ninguno', matResWA||'N/A',
+    p.get('pu_c')||'0', p.get('pu_nc')||'0',
+    p.get('pu_def')||'Ninguno', p.get('pu_q')||'N/A', p.get('pu_o')||'Sin obs',
+    pl_op, document.getElementById('pl_mq').value||'N/A', pl_tt,
+    document.getElementById('pl_c').value||'0',
+    document.getElementById('pl_nc').value||'0',
+    pl_def_txt,
+    `Med:${getRadioVal('pl_qm')} Mat:${getRadioVal('pl_qmt')} Cal:${getRadioVal('pl_qc')}`,
+    document.getElementById('pl_o').value||'Sin obs'
+  ].join('\t');
+
+  // ⚠️ Cambia este número por el de la analista real
+  const numAnalista = '573182150158';
+  const msgFinal = txt +
+    `\n\n➖➖➖➖➖➖➖➖➖➖\n📊 *DATOS PARA PEGAR EN EXCEL*\n_(Copia las 2 líneas y pégalas en Excel con Ctrl+V)_\n\n${encabCSV}\n${filaCSV}`;
+
+  toast('⏳ Guardando en la nube...');
+
+  window.addDoc(window.collection(window.db, 'reportes_produccion'), datosBD)
+    .then(() => {
+      toast('✅ ¡Guardado exitosamente!', 'success');
+      window.open(`https://wa.me/${numAnalista}?text=${encodeURIComponent(msgFinal)}`);
+    })
+    .catch(err => {
+      console.error('Error BD:', err);
+      toast('⚠️ Error BD. Enviando WhatsApp...', 'error');
+      window.open(`https://wa.me/${numAnalista}?text=${encodeURIComponent(msgFinal)}`);
+    });
+}
+</script>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, addDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyBMJQ6OfOACc-ODIKV5PEfGR5skyIDKdvE",
+  authDomain:        "iltec-produccion.firebaseapp.com",
+  projectId:         "iltec-produccion",
+  storageBucket:     "iltec-produccion.firebasestorage.app",
+  messagingSenderId: "1025837711353",
+  appId:             "1:1025837711353:web:858a3bb3f04c35270c8728"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ── Persistencia offline de Firestore ──
+// Si el WiFi cae al guardar, guarda localmente y sincroniza cuando vuelva
+
+enableIndexedDbPersistence(db).catch(err => {
+  if (err.code === 'failed-precondition') console.warn('Firestore offline: múltiples pestañas');
+  else if (err.code === 'unimplemented')  console.warn('Firestore offline: navegador no compatible');
+});
+
+
+// ── Puente global para funciones fuera del módulo ──
+window.db           = db;
+window.collection   = collection;
+window.addDoc       = addDoc;
+window.authInstance = auth;
+window.firebaseAuth = { signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence };
+window.firebaseReady = true;
+
+onAuthStateChanged(auth, user => {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('s') || params.get('s') === '1') {
+    if (user) {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('form-prog').style.display     = 'block';
+      document.getElementById('user-bar').style.display      = 'flex';
+      document.getElementById('user-email').textContent       = user.email;
+    }
+  }
+});
+</script>
+</body>
+</html>
